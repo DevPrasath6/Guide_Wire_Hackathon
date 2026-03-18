@@ -505,19 +505,6 @@ This is the implementation checklist mapped to your requested outputs.
 
 ---
 
-## 📌 How to Use This Repo
-
-1. **Create a GitHub repository** named `earnings-shield-devtrails-2026`.
-2. **Create a file `README.md`** and paste this content.
-3. **Commit and push** to your repo.
-4. **Record a 2‑minute video** explaining:
-   - The persona (Q‑commerce rider).
-   - The problem (20–30% income loss during disruptions).
-   - Your solution (AI‑risk, zero‑touch claims, weekly pricing).
-   - Tech stack (Python + React Native + XGBoost + GNNs).
-5. **Upload the video** to YouTube (Unlisted) or Google Drive and add the link to the top of this README.
-
----
 
 **Built for the Guidewire DEVTrails 2026 – AI‑Powered Insurance for India’s Gig Economy**
 🚀 Let’s build a safety net for the invisible backbone of India’s on‑demand economy.
