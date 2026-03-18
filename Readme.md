@@ -778,7 +778,742 @@ All APIs are documented using:
 | **Analytics dashboard**             | Worker and insurer dashboards showing coverage, protected earnings, and risk metrics.          |
 
 ---
+## 👨‍💻 Member 4: AI/ML, Trigger Engine, and Fraud Detection
 
+This section details the core AI/ML implementation responsibilities for risk modeling, parametric trigger evaluation, and fraud detection systems.
 
+### Overview
+
+Member 4 owns the **intelligence layer** of Earnings Shield, responsible for:
+1. Building and training the **dynamic premium model** (XGBoost/LightGBM).
+2. Implementing the **parametric trigger evaluation engine** with real-time event monitoring.
+3. Designing and deploying **fraud detection modules** (anomaly detection + collusion detection).
+4. Publishing model outputs to backend APIs and dashboard visualization modules.
+5. Documenting model metrics, validation results, and deployment guidelines.
+
+---
+
+### 1. Dynamic Risk Scoring Model (Weekly Premium Calculation)
+
+#### Objective
+Build a **predictive risk-scoring model** that generates personalized, data-driven weekly premiums for each Q-commerce delivery partner based on zone characteristics, historical disruption patterns, and rider behavior.
+
+#### Model Architecture
+
+**Algorithm:** **XGBoost** or **LightGBM** (gradient boosted decision trees)
+- Chosen for fast inference, interpretability, and handling mixed feature types.
+- Suitable for tabular data with non-linear relationships.
+
+#### Feature Engineering
+
+**Zone-Level Features:**
+- `zone_id`: Encoded ID of the delivery zone.
+- `avg_rainfall_mm`: Historical average rainfall in zone (last 5 years).
+- `flood_risk_score`: Zone vulnerability to waterlogging (0–1 scale).
+- `avg_max_temp`: Historical average max temperature (°C).
+- `avg_aqi`: Historical average Air Quality Index.
+- `infrastructure_density`: Dark stores, pickup points per sq. km.
+- `traffic_congestion_index`: Historical traffic congestion during peak hours.
+
+**Rider-Level Features:**
+- `years_on_platform`: Tenure on delivery platform.
+- `avg_weekly_earnings`: Baseline income from last 12 weeks.
+- `avg_orders_per_shift`: Historical order volume per shift.
+- `avg_shift_duration`: Typical shift length in hours.
+- `shifts_per_week`: Number of working days/shifts.
+- `cancellation_rate`: Percentage of accepted orders not completed.
+- `avg_delivery_time`: Average time from pickup to drop (correlates with disruption exposure).
+- `sla_breach_rate`: Percentage of SLA breaches (SLA = 10–15 min for Q-commerce).
+
+**Environmental Forecast Features (Dynamic):**
+- `rain_forecast_next_week`: Predicted rainfall for upcoming week (mm).
+- `heat_alert_forecast`: Boolean for heat advisory in next week.
+- `aqi_forecast`: Forecasted AQI for next week.
+- `expected_curfew_hours`: Flagged if local events (strikes, curfews) are scheduled.
+- `platform_downtime_risk`: Estimated server/app uptime risk for that zone.
+
+#### Target Variable
+- `premium_base` (₹/week): Historical baseline premium derived from:
+  - Historical loss ratio = (claims paid / premiums collected) for similar riders.
+  - Adjusted by zone and rider risk tiers.
+
+#### Model Training Pipeline
+
+```
+1. Data Collection
+   ├─ Zone-level weather, traffic, and platform data (12 months historical).
+   ├─ Rider earnings and behavior data (transaction logs).
+   └─ Past claims data and loss amounts.
+
+2. Feature Processing
+   ├─ Handle missing values (imputation by zone median).
+   ├─ Normalize continuous features (StandardScaler).
+   ├─ Encode categorical features (Label Encoding for zone_id).
+   └─ Create polynomial/interaction features if needed.
+
+3. Train-Test Split
+   ├─ 80% training (randomly sampled across zones and timeframes).
+   ├─ 10% validation (temporal holdout: last 2 weeks of data).
+   └─ 10% test (unseen zone or future period).
+
+4. Model Training
+   ├─ XGBoost / LightGBM hyperparameter tuning via GridSearchCV.
+   │  ├─ max_depth: 5–10
+   │  ├─ learning_rate: 0.01–0.1
+   │  ├─ n_estimators: 100–500
+   │  └─ subsample: 0.7–1.0
+   ├─ Cross-validation: 5-fold stratified by zone.
+   └─ Optimize for MSE or MAE (regression loss).
+
+5. Model Evaluation
+   ├─ R² score (explained variance).
+   ├─ RMSE (root mean squared error).
+   ├─ Feature importance (XGBoost's built-in SHAP values).
+   └─ Zone-level residual analysis for bias.
+
+6. Deployment
+   ├─ Save model as .pkl or .joblib.
+   ├─ Version control in Git (model artifacts in /models/).
+   └─ Serve via FastAPI endpoint: POST /api/risk/score.
+```
+
+#### Inference Pipeline (Weekly Premium Generation)
+
+```
+Input: Rider ID + Zone ID → Output: Weekly Premium (₹)
+
+Steps:
+1. Fetch rider profile → extract rider-level features.
+2. Fetch zone + latest weather/forecast data → extract zone and environment features.
+3. Concatenate all features → preprocess (standardize, encode).
+4. Pass through trained XGBoost model → get risk_score (0–1 scale).
+5. Convert risk_score to premium: 
+   premium = base_price * (1 + risk_score * multiplier)
+   Example: base = ₹20, risk_score = 0.6, multiplier = 2.0 → premium = ₹20 * 2.2 = ₹44.
+6. Apply caps (min ₹15/week, max ₹100/week) to ensure affordability.
+7. Return premium + confidence interval to backend.
+```
+
+#### Model Validation & Documentation
+
+**Metrics to Publish:**
+- Overall R² and RMSE.
+- Zone-wise RMSE (to identify zones with high model error).
+- Top 10 feature importances (SHAP values).
+- Confusion matrix for premium tier accuracy (if discretized into Low/Medium/High tiers).
+
+**Validation Notes:**
+- Document any data gaps or anomalies during training.
+- Flag if specific zones have insufficient training data.
+- Cross-validate against business logic (e.g., premium should increase with rainfall risk).
+
+---
+
+### 2. Parametric Trigger Evaluation Engine
+
+#### Objective
+Build an **event-driven trigger evaluation service** that monitors real-time disruption events, validates rider eligibility, determines event duration and severity, and auto-initiates claims in zero-touch fashion.
+
+#### Trigger Definitions & Thresholds
+
+A trigger is a **parametric event** that, when detected and validated, automatically initiates a claim without manual rider input.
+
+**Trigger 1: Heavy Rain / Waterlogging**
+- **Metric:** Rainfall amount (mm/hour) from OpenWeatherMap or weather API.
+- **Threshold:** ≥ 15 mm/hour in a specific zone.
+- **Duration Rule:** Event persists for ≥ 30 minutes.
+- **Rider Eligibility:**
+  - Rider is active in the affected zone.
+  - Rider's work hours overlap with the event window.
+  - No active orders being delivered at trigger time (safe-off check).
+- **Claim Trigger:** If all conditions met, flag for auto-claim initiation.
+
+**Trigger 2: Extreme Heat / Heat Advisory**
+- **Metric:** Temperature (°C) from weather API.
+- **Threshold:** ≥ 45°C for ≥ 2 hours, OR government heat health advisory issued.
+- **Duration Rule:** Event lasts ≥ 2 consecutive hours.
+- **Rider Eligibility:**
+  - Rider typically works during peak heat hours (10 AM – 3 PM).
+  - Rider is registered in the affected city/region.
+  - Rider's shift profile includes those hours.
+- **Claim Trigger:** Auto-claim after eligibility check.
+
+**Trigger 3: Severe Air Quality (AQI > 400)**
+- **Metric:** AQI from weather API (e.g., OpenWeatherMap).
+- **Threshold:** AQI ≥ 400 (Severe, hazardous).
+- **Duration Rule:** Event lasts ≥ 1 hour.
+- **Rider Eligibility:**
+  - Rider's zone overlaps with high-AQI region (within metro district).
+  - Rider has work hours scheduled during AQI alert.
+  - Platform health data shows no operational restrictions (platform may preempt issues).
+- **Claim Trigger:** Auto-claim if eligibility and platform status confirmed.
+
+**Trigger 4: Curfew / Strike / Social Disruption**
+- **Metric:** Manual data entry or third-party event API (e.g., GoogleMaps alerts, location-services).
+- **Threshold:** Curfew or strike declared in specific zone.
+- **Duration Rule:** Event marked as active for declared duration.
+- **Rider Eligibility:**
+  - Rider's home or primary working zone intersects with curfew zone.
+  - Rider's typical shift window falls within curfew hours.
+  - Rider was logged-in when curfew started (to avoid spurious claims).
+- **Claim Trigger:** Auto-claim if all conditions met.
+
+**Trigger 5: Platform Downtime / Zone Closure**
+- **Metric:** Platform API health status or order volume anomaly detection.
+- **Threshold:** 
+  - Reported API downtime > 15 minutes, OR
+  - Order volume in zone drops to < 5% of hourly baseline for ≥ 30 minutes.
+- **Duration Rule:** > 30 minutes of continuous downtime or low traffic.
+- **Rider Eligibility:**
+  - Rider is active (logged-in, app open) during downtime.
+  - Rider is in the affected zone (verified by GPS).
+  - No orders in flight at downtime start (safe exit condition).
+- **Claim Trigger:** Auto-claim once downtime resolved or threshold exceeded.
+
+#### Trigger Evaluation Service Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  Real-Time Event Stream (Message Queue: Redis / Kafka)          │
+│  Ingests: Weather events, Traffic updates, Platform status
+└────────────┬────────────────────────────────────────────────────┘
+             │
+             ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Event Normalizer (FastAPI Background Task / Apache Airflow)    │
+│  - Reconcile event timestamp, zone, severity                    │
+│  - Check if event is "new" or continuation of prior event       │
+│  - De-duplicate redundant events                                │
+└────────────┬────────────────────────────────────────────────────┘
+             │
+             ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Trigger Evaluation Engine (Python Service)                     │
+│                                                                  │
+│  for each event:                                               │
+│    ├─ Match event type to trigger definition                   │
+│    ├─ Check if magnitude/duration thresholds met                │
+│    ├─ Fetch affected zone/radius (e.g., 2–5 km radius)         │
+│    └─ Queue trigger for rider eligibility check                │
+└────────────┬────────────────────────────────────────────────────┘
+             │
+             ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Rider Eligibility Filter (Database Queries + Real-Time Checks) │
+│                                                                  │
+│  for each rider in affected zone:                              │
+│    ├─ Is rider active (logged-in, app open)?                   │
+│    ├─ Does rider's shift window overlap event time?            │
+│    ├─ GPS verification: rider in affected zone?                │
+│    ├─ Does rider have active policy for this week?             │
+│    └─ No active fraud flags or recent false-claim history?     │
+│                                                                  │
+│  Output: List of [eligible_rider_id, event_id, timestamp]      │
+└────────────┬────────────────────────────────────────────────────┘
+             │
+             ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Claim Initiation Service (FastAPI endpoint)                    │
+│                                                                  │
+│  for each eligible rider:                                       │
+│    ├─ Create claim: {rider_id, event_id, auto_initiated}       │
+│    ├─ Estimate lost income:                                     │
+│    │  loss = event_duration_hours * rider_hourly_baseline      │
+│    ├─ Cap claim payout (e.g., ≤ ₹500/week max)                │
+│    ├─ Save claim to DB with status "approved"                  │
+│    └─ Enqueue payout to Mock Payment Gateway                   │
+└────────────┬────────────────────────────────────────────────────┘
+             │
+             ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Instant Payout Service (Async Task)                            │
+│                                                                  │
+│  for each approved claim:                                       │
+│    ├─ Validate claim amt, rider wallet status                   │
+│    ├─ Call Mock Razorpay / Stripe / UPI API                    │
+│    ├─ LOG payout reference ID                                  │
+│    ├─ Update claim status to "paid"                            │
+│    └─ Notify rider via in-app + SMS                            │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Implementation Checklist
+
+- [ ] Create trigger definition config (YAML or JSON file in `/config/triggers.json`).
+- [ ] Implement event normalizer (FastAPI background task or Celery task).
+- [ ] Build trigger matcher function (event type → trigger rules).
+- [ ] Implement threshold checker (duration, severity, zone boundaries).
+- [ ] Build rider eligibility filter (DB queries + GPS validation).
+- [ ] Integrate with production weather/traffic/platform APIs (or mocks).
+- [ ] Implement auto-claim initiation logic (create claim object in DB).
+- [ ] Write payout estimation formula (hours × hourly baseline, with caps).
+- [ ] Set up mock Razorpay/Stripe/UPI integration for payout simulation.
+- [ ] Log all trigger events and eligibility checks for audit trail.
+- [ ] Add monitoring/alerting for missed or delayed claims.
+
+---
+
+### 3. Fraud Detection & Anomaly Detection
+
+#### Objective
+Detect suspicious behavior, GPS spoofing, fake inactivity claims, and collusion patterns to prevent fraudulent claims while maintaining system trust.
+
+#### 3A. Anomaly Detection in Location & Activity (Isolation Forest)
+
+**Problem:**
+Some riders may claim disruption events but fabricate their location or activity state to fraudulently collect payouts.
+
+**Anomalies to Detect:**
+- **GPS Jump Anomaly:** Rider teleports 10+ km in 2 minutes (impossible by bike).
+- **Fake Inactivity:** Rider claims inactive due to disruption, but GPS shows movement in safe zones.
+- **Shift Pattern Anomaly:** Rider suddenly works 22 hours/day (unrealistic).
+- **Order-to-Earnings Mismatch:** Claims huge income loss, but order history shows low activity.
+
+**Model: Isolation Forest**
+- Unsupervised anomaly detection.
+- Separates normal behavior from outliers via random isolation trees.
+- Lightweight and fast for streaming data.
+
+**Features for Isolation Forest:**
+
+```
+1. Location Features
+   - gps_lat, gps_lon: Current position.
+   - prev_lat, prev_lon: Previous position (1 min prior).
+   - km_moved_per_min: Distance (km) / time (min).
+   - zone_change_frequency: How often rider switches zone (anomaly if frequent).
+
+2. Temporal Features
+   - hour_of_day: Shift time.
+   - days_active_this_week: Total activity days.
+   - consecutive_active_hours: How long shifted without break.
+   - time_since_last_order: Minutes since last order (anomaly if idle > 30 min).
+
+3. Activity Features
+   - orders_per_hour: Current rate.
+   - avg_orders_per_hour: Historical average.
+   - order_deviation_ratio: current / historical (anomaly if > 3x or < 0.3x).
+   - cancellation_rate_this_shift: % of accepted orders not completed.
+   - delivery_time_variance: High variance = suspicious pattern.
+
+4. Engagement Features
+   - app_logout_frequency: How often rider logs out/in (anomaly if frequent).
+   - api_request_rate: How many requests/min (anomaly if unusually high).
+   - location_permission_changes: App permission re-grants (suspicious).
+```
+
+**Training:**
+- Use 3–6 months of historical rider data (GPS, orders, timings).
+- Mark known fraud cases as "anomaly = 1" for validation.
+- Train Isolation Forest with `contamination=0.05` (assume 5% anomaly rate).
+
+**Inference (Real-Time):**
+```
+On each claim auto-initiated:
+1. Extract rider's 1-hour activity window before disruption event.
+2. Compute anomaly score via Isolation Forest.
+3. If anomaly_score > threshold (e.g., 0.7):
+   ├─ Flag claim for manual review.
+   ├─ Deduct points from rider trust score.
+   └─ Log fraudulent behavior alert.
+4. If anomaly_score ≤ threshold:
+   └─ Proceed with claim initialization.
+```
+
+**Output:**
+- `anomaly_score` (0–1): Higher = more suspicious.
+- `flagged_features`: List of features that contributed to anomaly (interpretability).
+- `recommendation`: "Approve", "Review Manually", or "Reject".
+
+---
+
+#### 3B. Collusion Detection (Graph-Based Patterns)
+
+**Problem:**
+Multiple riders in the same zone may collude to claim fake disruptions simultaneously, inflating loss ratios and defrauding the insurer.
+
+**Collusion Patterns:**
+- **Synchronized Offline Events:** 10+ riders in zone claim inactivity at same time, but zone traffic is normal.
+- **Fake Mutual Help:** Riders trade orders to inflate individual claim amounts.
+- **Reverse SLA:** Riders deliberately breach SLA to avoid being forced offline (suspicious).
+
+**Model: Graph-Based Collusion Detection**
+
+Build a **rider network graph** where:
+- **Nodes:** Rider IDs.
+- **Edges:** Weighted by:
+  - `co_occurrence_count`: Times they're active in same zone at same time.
+  - `claimed_loss_correlation`: Correlation of claimed loss amounts.
+  - `dispute_rate`: Reverse correlation (claim together, but different stories).
+
+**Algorithm:**
+1. **Community Detection (Louvain Method):**
+   - Identify clusters of riders who frequently interact/claim together.
+   - Retrieve highly connected communities.
+
+2. **Anomalous Community Scoring:**
+   ```
+   For each detected community:
+   ├─ Calculate avg loss ratio for that community.
+   ├─ Compare vs platform avg loss ratio.
+   ├─ If community_loss_ratio >> platform_avg:
+   │  └─ Flag entire community as suspicious.
+   ├─ Calculate pairwise temporal correlation of claim times.
+   └─ If correlation > 0.8 (claims always together):
+      └─ Boost suspicion score.
+   ```
+
+3. **Linkage to Triggers:**
+   ```
+   When claim auto-initiated:
+   ├─ Fetch rider's community.
+   ├─ Count how many others in community filed same claim.
+   ├─ If count > threshold (e.g., >20% of community):
+   │  ├─ Calculate "collusion suspicion score".
+   │  └─ Flag claim for review if score > threshold.
+   └─ Log claim for audit + later batch analysis.
+   ```
+
+**Graph Construction (Batch Job):**
+- Run weekly on historical claim data.
+- Rank all rider communities by collusion risk.
+- Store results in /outputs/fraud_detection/community_graph.json.
+
+**Output:**
+- `collusion_score` (0–1): Higher = more likely fraudulent ring.
+- `community_id`: Rider cluster ID.
+- `community_size`: Number of riders in cluster.
+- `avg_loss_ratio`: Community's average loss ratio.
+- `recommendation`: "Healthy", "Monitor", or "Investigate".
+
+---
+
+#### 3C. Fraud Scoring Aggregation
+
+Combine Isolation Forest anomaly score + Graph-based collusion score into a **unified fraud alert**:
+
+```python
+def compute_fraud_score(rider_id, claim_id):
+    anomaly_score = isolation_forest_predict(rider_id)
+    community = graph_db.get_rider_community(rider_id)
+    collusion_score = compute_community_anomaly(community)
+    
+    # Weighted combination
+    fraud_score = (0.6 * anomaly_score) + (0.4 * collusion_score)
+    
+    if fraud_score > 0.75:
+        return "REJECT"  # High confidence fraud
+    elif fraud_score > 0.50:
+        return "REVIEW"  # Manual intervention needed
+    else:
+        return "APPROVE"  # Low fraud risk
+```
+
+---
+
+#### Fraud Detection Deliverables
+
+- [ ] **Anomaly Detection Module**
+  - Trained Isolation Forest model (saved as .pkl).
+  - Feature extraction pipeline (code in `/models/anomaly_detector.py`).
+  - Real-time inference endpoint: `POST /api/fraud/anomaly_score`.
+  - Validation metrics (precision, recall, F1 on test set).
+
+- [ ] **Collusion Detection Module**
+  - Community detection algorithm (NetworkX-based code).
+  - Weekly batch job (Apache Airflow or Celery task).
+  - Output: Community graph JSON + collusion scores per community.
+  - Validation: Manual review of top-10 flagged communities.
+
+- [ ] **Unified Fraud Alert System**
+  - Combined fraud score logic (code in `/models/fraud_aggregator.py`).
+  - Decision matrix (APPROVE / REVIEW / REJECT rules).
+  - Alert routing to backend and dashboard.
+
+- [ ] **Fraud Monitoring Dashboard**
+  - Real-time fraud flags and anomaly counts.
+  - Community risk leaderboard.
+  - Manual review queue and resolutions log.
+
+---
+
+### 4. Model Outputs & API Integrations
+
+#### 4A. Risk Scoring API
+
+**Endpoint:** `POST /api/risk/score`
+
+**Request:**
+```json
+{
+  "rider_id": "R12345",
+  "zone_id": "Z001",
+  "force_recompute": false
+}
+```
+
+**Response:**
+```json
+{
+  "rider_id": "R12345",
+  "risk_score": 0.62,
+  "weekly_premium": 42.50,
+  "premium_range": [38.00, 48.00],
+  "risk_tier": "MEDIUM",
+  "top_features": [
+    { "feature": "avg_rainfall_mm", "importance": 0.18 },
+    { "feature": "flood_risk_score", "importance": 0.15 },
+    { "feature": "years_on_platform", "importance": 0.12 }
+  ],
+  "confidence": 0.87,
+  "generated_at": "2026-03-18T10:30:00Z"
+}
+```
+
+---
+
+#### 4B. Trigger Evaluation API
+
+**Endpoint:** `POST /api/triggers/evaluate`
+
+**Request:**
+```json
+{
+  "event_type": "heavy_rain",
+  "zone_id": "Z001",
+  "severity": 0.85,
+  "duration_minutes": 35,
+  "start_time": "2026-03-18T14:00:00Z"
+}
+```
+
+**Response:**
+```json
+{
+  "event_id": "EVT_67890",
+  "zone_id": "Z001",
+  "trigger_matched": "heavy_rain",
+  "threshold_met": true,
+  "eligible_riders": [
+    {
+      "rider_id": "R12345",
+      "active": true,
+      "in_zone": true,
+      "shift_overlap": true,
+      "claim_auto_initiated": true,
+      "claim_id": "CLM_11111"
+    },
+    {
+      "rider_id": "R67890",
+      "active": false,
+      "claim_auto_initiated": false,
+      "reason": "not_logged_in"
+    }
+  ],
+  "claims_initiated": 12,
+  "total_payout_estimated": 3450.00,
+  "processed_at": "2026-03-18T14:05:00Z"
+}
+```
+
+---
+
+#### 4C. Fraud Detection API
+
+**Endpoint:** `POST /api/fraud/check`
+
+**Request:**
+```json
+{
+  "claim_id": "CLM_11111",
+  "rider_id": "R12345"
+}
+```
+
+**Response:**
+```json
+{
+  "claim_id": "CLM_11111",
+  "rider_id": "R12345",
+  "anomaly_score": 0.42,
+  "collusion_score": 0.12,
+  "fraud_score": 0.35,
+  "recommendation": "APPROVE",
+  "flagged_features": [
+    "zone_change_frequency",
+    "time_since_last_order"
+  ],
+  "community_info": {
+    "community_id": "C001",
+    "community_size": 45,
+    "avg_loss_ratio": 0.18,
+    "collusion_risk": "LOW"
+  },
+  "checked_at": "2026-03-18T14:06:00Z"
+}
+```
+
+---
+
+### 5. Model Validation & Documentation
+
+#### Validation Checklist
+
+- [ ] **Risk Scoring Model**
+  - [ ] R² score ≥ 0.7 on test set.
+  - [ ] RMSE within ±15% of mean premium.
+  - [ ] Zone-wise residuals analyzed (no systematic bias).
+  - [ ] Feature importances make business sense.
+  - [ ] Premium ranges (₹15–100/week) are realistic.
+
+- [ ] **Trigger Evaluation Engine**
+  - [ ] All 5 trigger types correctly threshold-matched.
+  - [ ] Eligibility filter catches inactive riders (0 false positives).
+  - [ ] End-to-end latency: < 10 seconds from event to claim initiation.
+  - [ ] Zone boundary logic tested for edge cases (zone borders).
+
+- [ ] **Isolation Forest (Anomaly Detection)**
+  - [ ] Precision ≥ 0.80 (low false-alarm rate).
+  - [ ] Recall ≥ 0.70 (catches most fraud).
+  - [ ] Validation on held-out fraud cases.
+  - [ ] Feature ablation: which features matter most?
+
+- [ ] **Community Detection (Collusion)**
+  - [ ] Manual audit of top-10 flagged communities.
+  - [ ] No false positives (legitimate rider groups not flagged).
+  - [ ] Collusion score correlates with re-flagged claims.
+
+---
+
+#### Documentation Deliverables
+
+**1. Model Cards (per model):**
+
+```markdown
+# Risk Scoring Model Card
+
+## Model Details
+- **Algorithm:** XGBoost
+- **Training Date:** 2026-03-18
+- **Data Cutoff:** 2025-09-18 (6 months historical)
+- **Version:** 1.0
+
+## Performance
+- **R² Score:** 0.82
+- **RMSE:** ₹8.40 (mean premium ₹48)
+- **MAE:** ₹6.20
+
+## Limitations
+- Insufficient training data for zones with < 50 riders.
+- Model trained on 2024–2025 data; may not generalize to 2026 climate anomalies.
+
+## Recommendations
+- Retrain quarterly with fresh data.
+- Monitor zone-level residuals for concept drift.
+```
+
+**2. Trigger Evaluation Documentation:**
+
+```markdown
+# Parametric Trigger Definitions
+
+## Trigger 1: Heavy Rain
+- **Threshold:** ≥ 15 mm/hour
+- **Duration:** ≥ 30 minutes
+- **Data Source:** OpenWeatherMap API
+- **Zone Radius:** 2 km
+
+## Trigger 2: Extreme Heat
+...
+```
+
+**3. Fraud Detection Report:**
+
+```markdown
+# Fraud Detection Validation Report
+
+## Anomaly Detection (Isolation Forest)
+- **Test Set Precision:** 0.82
+- **Test Set Recall:** 0.71
+- **Top Anomalies Detected:** GPS jumps, shift-time outliers
+
+## Collusion Detection (Graph)
+- **Communities Found:** 47
+- **High-Risk Communities:** 3
+- **Manual Validation Rate:** 100% (all 3 validated as legitimate activity)
+
+## Recommendations
+- Increase anomaly threshold to reduce false alarms.
+- Monitor top-5 communities monthly.
+```
+
+---
+
+### 6. Deployment & Monitoring
+
+#### Model Deployment
+
+- **Risk Scoring Model:** Deployed on FastAPI server, cached in Redis for performance.
+- **Trigger Evaluation Engine:** Runs as background worker (Celery/Airflow), triggered by event stream.
+- **Fraud Detection Models:** Real-time inference via API endpoints; batch community detection runs weekly.
+
+#### Monitoring & Alerting
+
+- **Model Drift Detection:**
+  - Weekly check: Is test-set performance still ≥ baseline?
+  - Alert if R² drops > 5% or fraud precision < 0.75.
+
+- **Claim Processing SLA:**
+  - Alert if auto-claim initiation latency > 15 seconds.
+
+- **Fraud Alerts:**
+  - Daily summary: # of anomalies flagged, # of collusion alerts.
+  - Manual review queue dashboard (priority by fraud score).
+
+---
+
+### 7. Deliverables Checklist
+
+**By End of Phase 2 (April 4, 2026):**
+- [ ] Dynamic premium model trained, validated, documented.
+- [ ] Trigger evaluation engine fully integrated with event stream.
+- [ ] Mock triggers firing correctly in demo environment.
+- [ ] Basic fraud detection module (Isolation Forest) trained and tested.
+
+**By End of Phase 3 (April 17, 2026):**
+- [ ] All fraud detection modules (anomaly + collusion) production-ready.
+- [ ] APIs fully documented with example requests/responses.
+- [ ] Validation report with metrics and recommendations.
+- [ ] Model cards and deployment guidelines finalized.
+- [ ] Integration with backend APIs and dashboard visualizations complete.
+- [ ] Monitoring dashboard live with fraud/claim alerts.
+
+---
+
+**Expected Outputs for Backend & Dashboard Integration:**
+
+1. **Risk Scoring Model Output:**
+   - Weekly premium (₹) per rider per week.
+   - Risk tier (LOW / MEDIUM / HIGH).
+   - Feature importance breakdown for explainability.
+
+2. **Trigger Decision Engine Output:**
+   - Auto-claimed event ID.
+   - Eligible riders list.
+   - Estimated total payout.
+   - Claim initiation timestamp.
+
+3. **Fraud Scoring Output:**
+   - Fraud flag (APPROVE / REVIEW / REJECT).
+   - Anomaly and collusion scores.
+   - Flagged features for investigator review.
+   - Community risk assessment.
+
+4. **Model Validation & Metrics:**
+   - Performance metrics (R², precision, recall).
+   - Feature importance and model cards.
+   - Deployment guidelines and monitoring rules.
+
+---
 **Built for the Guidewire DEVTrails 2026 – AI‑Powered Insurance for India’s Gig Economy**
 🚀 Let’s build a safety net for the invisible backbone of India’s on‑demand economy.
