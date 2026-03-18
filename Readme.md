@@ -406,6 +406,280 @@ This is the implementation checklist mapped to your requested outputs.
 
 ---
 
+## 🗄️ Backend APIs & Database Architecture
+
+The backend of **Earnings Shield** is designed as a scalable, modular, and API-first system that powers policy management, real-time trigger monitoring, automated claims, and fraud detection.
+
+It acts as the **core intelligence layer** connecting frontend apps, AI/ML models, and external data sources.
+
+---
+
+### 🧩 1. Database Schema Design
+
+The system uses **PostgreSQL** as the primary relational database to ensure consistency, reliability, and structured querying.
+
+#### Key Entities
+
+**1. Users Table**
+
+* `id` (UUID)
+* `name`
+* `mobile_number`
+* `platform_type` (Zepto / Blinkit / etc.)
+* `platform_worker_id`
+* `zone_id`
+* `hourly_wage`
+* `work_schedule` (JSON)
+* `created_at`
+
+---
+
+**2. Zones Table**
+
+* `id`
+* `city`
+* `zone_name`
+* `risk_level` (Low / Medium / High)
+* `geo_coordinates`
+
+---
+
+**3. Policies Table**
+
+* `id`
+* `user_id`
+* `weekly_premium`
+* `coverage_limit`
+* `start_date`
+* `end_date`
+* `status` (Active / Expired / Cancelled)
+* `risk_score`
+* `created_at`
+
+---
+
+**4. Triggers Table**
+
+* `id`
+* `trigger_type` (Rain / Heat / AQI / Curfew / Platform Down)
+* `zone_id`
+* `threshold_value`
+* `current_value`
+* `trigger_status` (Active / Inactive)
+* `timestamp`
+
+---
+
+**5. Claims Table**
+
+* `id`
+* `user_id`
+* `policy_id`
+* `trigger_id`
+* `hours_impacted`
+* `estimated_loss`
+* `approved_amount`
+* `status` (Pending / Approved / Rejected)
+* `created_at`
+
+---
+
+**6. Payouts Table**
+
+* `id`
+* `claim_id`
+* `amount`
+* `status` (Processing / Completed / Failed)
+* `transaction_reference`
+* `processed_at`
+
+---
+
+**7. Fraud Flags Table**
+
+* `id`
+* `user_id`
+* `claim_id`
+* `fraud_type` (GPS Spoof / Behavior Anomaly / Collusion)
+* `confidence_score`
+* `status` (Flagged / Reviewed / Cleared)
+* `created_at`
+
+---
+
+### ⚙️ 2. Core Backend APIs
+
+The backend is built using **FastAPI**, ensuring high performance and easy integration with AI models.
+
+---
+
+#### 🔐 Authentication & User APIs
+
+* `POST /auth/login`
+
+  * Mobile + OTP authentication (mock supported)
+
+* `POST /users/create-profile`
+
+  * Create user profile after onboarding
+
+* `GET /users/{id}`
+
+  * Fetch user details and profile
+
+---
+
+#### 📅 Policy Management APIs
+
+* `POST /policies/create`
+
+  * Generate weekly policy using AI risk score
+
+* `GET /policies/{user_id}`
+
+  * Retrieve active and past policies
+
+* `POST /policies/renew`
+
+  * Renew policy with updated premium
+
+---
+
+#### 🌩️ Trigger Monitoring APIs
+
+* `GET /triggers/active`
+
+  * Fetch all active disruption triggers in zones
+
+* `POST /triggers/update`
+
+  * Update trigger values from external APIs (weather, AQI, etc.)
+
+---
+
+#### ⚡ Claim Pipeline APIs (Zero-Touch)
+
+* `POST /claims/auto-initiate`
+
+  * Automatically create claim when trigger conditions are met
+
+* `GET /claims/{user_id}`
+
+  * Fetch all claims for a user
+
+* `GET /claims/status/{claim_id}`
+
+  * Track claim processing status
+
+---
+
+#### 💰 Payout APIs
+
+* `POST /payouts/process`
+
+  * Simulate instant payout via mock payment gateway
+
+* `GET /payouts/{claim_id}`
+
+  * Get payout details and transaction status
+
+---
+
+#### 🧠 Fraud Detection APIs
+
+* `POST /fraud/analyze`
+
+  * Run anomaly detection on claim activity
+
+* `GET /fraud/flags`
+
+  * Fetch flagged suspicious claims
+
+---
+
+### 🔗 3. External Data Integration Layer
+
+To support parametric triggers, the backend integrates with multiple external (or mocked) data sources:
+
+* **Weather APIs**
+
+  * Rainfall intensity, temperature, AQI levels
+
+* **Traffic APIs**
+
+  * Congestion levels, road closures
+
+* **Platform APIs (Mock)**
+
+  * Order volume per zone
+  * Rider activity status
+
+All data pipelines are:
+
+* Cached using **Redis**
+* Processed at regular intervals
+* Mapped to trigger thresholds
+
+---
+
+### 🔄 4. Claim Processing Engine (Core Logic)
+
+The backend includes an automated **event-driven claim engine**:
+
+1. Trigger crosses threshold (e.g., heavy rain detected)
+2. System checks:
+
+   * Active users in affected zone
+   * Drop in order volume
+3. Eligible users identified
+4. Claim auto-created
+5. Fraud analysis executed
+6. Approved claims sent to payout service
+
+---
+
+### 📄 5. API Documentation & Sample Payloads
+
+All APIs are documented using:
+
+* **Swagger UI (FastAPI built-in)**
+* Example request/response payloads
+
+#### Example: Policy Creation Request
+
+```json
+{
+  "user_id": "123",
+  "zone_id": "Z45",
+  "weekly_hours": 40,
+  "hourly_wage": 120
+}
+```
+
+#### Example: Claim Response
+
+```json
+{
+  "claim_id": "C789",
+  "status": "Approved",
+  "estimated_loss": 480,
+  "payout_amount": 450
+}
+```
+
+---
+
+### 🚀 Backend Deliverables
+
+* ✅ Fully functional **FastAPI backend**
+* ✅ Structured **PostgreSQL schema + migrations**
+* ✅ End-to-end **policy & claims engine**
+* ✅ Integrated **trigger monitoring system**
+* ✅ Mock-ready **payment and external APIs**
+* ✅ Scalable architecture ready for frontend & AI modules
+
+---
+
 ## 🛠️ Tech Stack Summary
 
 ### Frontend
