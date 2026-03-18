@@ -1,0 +1,340 @@
+# Earnings Shield: AI‑Powered Parametric Income Protection for India’s Gig Economy
+**Guidewire DEVTrails 2026 – University Hackathon**
+
+---
+
+## 🚀 Project Vision
+
+India’s gig‑economy delivery partners (Zomato, Swiggy, Zepto, Blinkit, etc.) are the backbone of the on‑demand ecosystem, but they have no financial safety net when external disruptions hit. Extreme weather, pollution spikes, and sudden curfews can wipe out 20–30% of their monthly earnings in a matter of days.
+
+**Earnings Shield** is an AI‑enabled parametric insurance platform that safeguards India’s gig workers against **loss of income** caused by uncontrollable external events. The system uses predictive risk modeling, real‑time triggers, and zero‑touch payouts to mimic how a real‑world gig‑income insurer would behave, while strictly adhering to the hackathon’s constraints.
+
+---
+
+## 🎯 Target Persona
+
+### **Persona:** Q‑commerce / Quick‑Commerce Delivery Partners
+*(e.g., Zepto, Blinkit, Swiggy Instamart riders)*
+
+- Operate in tight 2–3 km dark‑store zones.
+- Work under strict 10–15 minute SLAs.
+- Highly vulnerable to localized disruptions (waterlogging, sudden traffic jams, curfews, platform shutdowns).
+- No protection today when storms, pollution alerts, or local shutdowns force them offline.
+
+We chose **Q‑commerce** because:
+- Disruptions are **hyper‑local** and **instantly visible** in platform logs.
+- Lost income is easy to quantify (orders per hour, hourly wage).
+- This makes parametric triggers and AI‑based risk profiling very clean and demo‑friendly.
+
+---
+
+## 🌩️ Core Problem Statement
+
+India’s gig‑economy delivery partners bear 100% of the financial risk when external disruptions occur:
+- Extreme heat, heavy rain, floods, or pollution spikes.
+- Local strikes, curfews, or sudden market/zone closures.
+- Platform outages or app‑level shutdowns in a specific area.
+
+During these events, riders:
+- Cannot work outdoors.
+- Cannot access pickup/drop locations.
+- Lose 20–30% of their monthly earnings with no safety net.
+
+**Earnings Shield** turns this from a raw risk into a **managed, AI‑driven, parametric insurance product**.
+
+---
+
+## 🎯 The Golden Rules (Constraints)
+
+Earnings Shield strictly complies with the hackathon’s non‑negotiables:
+
+1. **Persona Focus**
+   - Only **delivery partners** (here: **Q‑commerce riders**).
+2. **Coverage Scope**
+   - Covers **Loss of Income only**.
+   - No coverage for health, life, accidents, or vehicle repairs.
+3. **Weekly Pricing Model**
+   - Premiums are structured on a **weekly basis**, aligned with gig‑worker payout cycles.
+   - No hourly or long‑term insurance models.
+
+---
+
+## 🧠 Core Disruptions & Parametric Triggers
+
+For our Q‑commerce persona, we define the following **external disruption parameters** (must use own ideation):
+
+| Trigger Type            | Example Event                                 | Impact on Income                                                                 |
+|-------------------------|-----------------------------------------------|-----------------------------------------------------------------------------------|
+| Environmental – Rain    | Heavy rain / waterlogging (>x mm/hr)          | Riders cannot operate bikes; dark stores pause orders in that zone.              |
+| Environmental – Heat    | Extreme heat (>45°C)                          | Riders taken offline during peak hours due to health advisories.                 |
+| Environmental – Pollution | Severe air‑quality alerts (e.g., AQI > 400) | Riders asked to avoid working; platform restricts zones.                         |
+| Social – Curfew/Strike  | Local strike, protest, or curfew              | No access to pickup/drop locations; SLAs cannot be met.                         |
+| Social – Platform/Zone  | App shutdown, dark‑store closure              | Zero orders in that radius for a fixed duration.                               |
+
+**Important:**
+- Triggers are **parametric** (data‑based), not based on claims filed by riders.
+- We **insure lost income**, not vehicle damage or bodily injury.
+
+---
+
+## 🧩 Solution Architecture
+
+Earnings Shield is an AI‑enabled, mobile‑first platform that:
+
+1. **Onboards** Q‑commerce riders quickly.
+2. **Creates weekly policies** with dynamic AI‑based premiums.
+3. **Monitors** real‑time triggers (weather, traffic, platform status).
+4. **Automatically initiates claims** when a disruption hits.
+5. **Instantly pays** an estimated lost‑income amount.
+6. **Detects fraud** using AI‑powered behavior analysis.
+
+### High‑Level Flow
+
+1. **Worker Onboarding**
+   - Rider logs in via mobile app (or mock web UI).
+   - Connects with their gig‑platform ID (mock API).
+   - Selects Q‑commerce zone and working hours.
+
+2. **Weekly Policy Creation**
+   - System calculates **Dynamic Weekly Premium** using AI.
+   - Rider confirms purchase; premium auto‑deducted from linked wallet.
+
+3. **Risk Monitoring**
+   - Weather API, traffic API, and platform API are polled continuously.
+   - When a disruption crosses thresholds, an **automated event** is raised.
+
+4. **Zero‑Touch Claim Initiation**
+   - System checks if:
+     - Rider is active in that zone.
+     - Orders have dropped below a threshold.
+   - If yes → **automatic claim initiation**.
+
+5. **Instant Payout**
+   - Estimated lost income = `hours impacted × hourly wage`.
+   - Payout is credited to rider’s wallet (mock payment gateway).
+
+6. **Fraud Detection & Analytics**
+   - AI models flag suspicious patterns (GPS spoofing, fake inactivity).
+   - Dashboards show coverage, claims, and risk‑metrics for both riders and insurers.
+
+---
+
+## 🧠 AI‑ ML Models & Components
+
+### 1. **AI‑Powered Risk Assessment (Dynamic Weekly Premium)**
+
+**Goal:**
+Calculate a **personalized weekly premium** for each rider based on:
+- Operating zone (flood‑prone, traffic‑dense, etc.).
+- Historical disruption data (rain, heat, AQI).
+- Typical working hours and days.
+
+**Model:**
+- Use **XGBoost or LightGBM** for tabular risk‑scoring.
+- Inputs:
+  - Historical weather data per zone.
+  - Past income loss during similar events.
+  - Rider attributes (zone, hours, SLA type).
+- Output:
+  - A **risk score** → mapped to weekly premium (e.g., ₹18 vs ₹35/week).
+
+**Why this wins:**
+- True **predictive risk modeling** for the persona.
+- Matches the “dynamic premium calculation” requirement.
+
+---
+
+### 2. **Intelligent Fraud Detection**
+
+**Goal:**
+Catch delivery‑specific fraud such as:
+- GPS spoofing (sudden jumps).
+- Fake inactivity or collusion to fake disruption claims.
+
+**Components:**
+
+#### a) **Anomaly Detection in Location & Activity**
+
+- **Model:** **Isolation Forest** for outlier detection.
+- Detects:
+  - GPS jumps of 10+ km in 2 minutes.
+  - Suspicious inactivity patterns during “claimed” disruptions.
+
+#### b) **Behavior Graph / Fraud‑Ring Detection**
+
+- **Model:** **Graph Neural Networks (GNNs)** or **NetworkX‑based graphs**.
+- Builds a network of riders in the same zone.
+- Flags:
+  - Large clusters going “offline” at the same time when weather is normal.
+  - Collusive patterns across multiple riders.
+
+**Impact:**
+- Meets the “intellectual fraud detection” requirement.
+- Combines anomaly detection, location validation, and duplicate‑claim prevention.
+
+---
+
+### 3. **Parametric Automation (Zero‑Touch Claims)**
+
+**Goal:**
+- No manual claim filing.
+- Automatic claim initiation and payout based on triggers.
+
+**Process:**
+
+1. **Real‑Time Trigger Monitoring**
+   - Poll external APIs:
+     - Weather API (OpenWeatherMap / AccuWeather).
+     - Traffic API (Mapbox).
+     - Platform API (mock Zomato/Blinkit‑style data).
+
+2. **Trigger Conditions**
+   - Rain threshold crossed in a specific zone.
+   - AQI > 400 in a city block.
+   - Local curfew or strike announced.
+   - Platform API shows zero orders in that zone for ≥ x minutes.
+
+3. **Automatic Claim Initiation**
+   - If rider is active in that zone and logged‑in, but orders drop sharply → trigger claim.
+
+4. **Instant Payout**
+   - Use a **mock payment gateway** (Razorpay test mode, Stripe sandbox, or UPI simulator) to credit the estimated loss.
+
+---
+
+## 📊 Analytics Dashboard
+
+Two dashboards are planned:
+
+### 1. **Worker Dashboard**
+
+- Active weekly coverage.
+- Earnings protected vs. actual loss in recent disruptions.
+- Historical disruption patterns in their zone.
+- Weekly premium breakdown.
+
+### 2. **Insurer / Admin Dashboard**
+
+- Loss ratios by zone and disruption type.
+- Predictive risk heatmaps for next week’s weather.
+- Fraud‑detection alerts and flagged claims.
+
+This directly satisfies the **“Analytics dashboard showing relevant metrics”** requirement.
+
+---
+
+## 🛠️ Tech Stack Summary
+
+### Frontend
+- **Primary:** **React Native** (mobile‑first for gig‑workers).
+- **Admin:** **React.js** web dashboard.
+
+### Backend
+- **Language:** **Python** (FastAPI) for clean API layer and ML integration.
+- **Database:** **PostgreSQL** (users, policies, claims) + **Redis** (real‑time caching).
+
+### AI / ML
+- **Risk & Pricing:**
+  - `scikit‑learn`, **XGBoost**, **LightGBM**.
+- **Fraud Detection:**
+  - **Isolation Forest** (anomaly detection).
+  - **NetworkX** / **PyTorch Geometric** (Graph ML).
+
+### APIs & Integrations
+- **Weather API:** OpenWeatherMap / AccuWeather (free tier / mocks).
+- **Traffic / Location:** Mapbox / Google Maps.
+- **Platform API:** Mock JSON endpoints simulating Zomato/Blinkit‑style data.
+- **Payments:** Razorpay test mode / Stripe sandbox / UPI simulator for instant‑payout demo.
+
+### Other Tools
+- **Git** + **GitHub** for version control and Phase‑1 Readme.
+- **Python virtual env** / **Docker** for reproducible setup (optional but recommended).
+
+---
+
+## 🗺️ 6‑Week Project Roadmap (DEVTrails 2026)
+
+### **Phase 1: Ideation & Foundation (March 4 – March 20)**
+**Theme:** “Ideate & Know Your Delivery Worker”
+
+**Deliverables:**
+- GitHub repo with this `README.md` as the **Idea Document**.
+- 2‑minute video link (public) outlining strategy, persona, and prototype scope.
+
+**Key Tasks:**
+- Lock target persona: **Q‑commerce delivery partners**.
+- Define 3–5 **parametric triggers** (rain, heat, pollution, curfew, platform‑down).
+- Finalize **weekly premium model** and AI‑stack.
+- Sketch **user flows** for registration, policy‑management, and zero‑touch claims.
+- Start basic mock API design (weather, traffic, platform).
+
+---
+
+### **Phase 2: Automation & Protection (March 21 – April 4)**
+**Theme:** “Protect Your Worker”
+
+**Deliverables:**
+- Executable source code (backend + frontend starter).
+- 2‑minute demo video of core flows.
+
+**Key Tasks:**
+- Build **registration and onboarding UI**.
+- Implement **weekly policy management** (create, view, renew).
+- Train **XGBoost model** for dynamic weekly pricing based on mock data.
+- Connect **weather and traffic APIs** (or mocks) to build 3–5 automated triggers.
+- Implement **zero‑touch claim initiation** logic (no manual claim filing).
+- Set up **mock payment gateway** to simulate instant payouts.
+
+---
+
+### **Phase 3: Scale & Optimise (April 5 – April 17)**
+**Theme:** “Perfect for Your Worker”
+
+**Deliverables:**
+- Advanced fraud‑detection implementation.
+- Instant payout simulation integrated.
+- Intelligent analytics dashboards.
+- 5‑minute demo video and final pitch deck (PDF).
+
+**Key Tasks:**
+- Implement **Isolation Forest** and **Graph ML** for fraud detection.
+- Fine‑tune fraud rules to catch GPS spoofing, fake inactivity, and collusion.
+- Polish **worker dashboard** (active coverage, protected earnings).
+- Build **insurer dashboard** (loss ratios, risk heatmaps, predictive analytics).
+- Record a **5‑minute screen‑capture demo** showing:
+  - Fake rainstorm → disruption trigger → automatic claim → instant payout.
+- Prepare a **pitch deck** explaining persona, AI‑architecture, and business viability of the weekly model.
+
+---
+
+## ✅ How This Meets the Must‑Have Features
+
+| Requirement                          | How Earnings Shield Addresses It                                                                 |
+|--------------------------------------|---------------------------------------------------------------------------------------------------|
+| **Optimized onboarding**            | Mobile‑first app with quick onboarding for Q‑commerce riders, linked to their platform ID.      |
+| **Risk profiling using AI/ML**      | XGBoost/LightGBM model for zone‑based risk and dynamic weekly premiums.                         |
+| **Weekly pricing model**            | Strictly weekly micro‑premium; no hourly or long‑term plans.                                     |
+| **Parametric triggers**             | Weather, traffic, and platform‑API events automatically trigger loss‑of‑income checks.          |
+| **Zero‑touch claim initiation**     | System auto‑detects disruptions and initiates claims without rider input.                        |
+| **Instant payout processing**       | Mock payment gateway (Razorpay / Stripe / UPI) simulates instant wage recovery.                 |
+| **Fraud detection**                 | Isolation Forest + Graph ML for GPS spoofing, fake inactivity, collusion.                      |
+| **Analytics dashboard**             | Worker and insurer dashboards showing coverage, protected earnings, and risk metrics.          |
+
+---
+
+## 📌 How to Use This Repo
+
+1. **Create a GitHub repository** named `earnings-shield-devtrails-2026`.
+2. **Create a file `README.md`** and paste this content.
+3. **Commit and push** to your repo.
+4. **Record a 2‑minute video** explaining:
+   - The persona (Q‑commerce rider).
+   - The problem (20–30% income loss during disruptions).
+   - Your solution (AI‑risk, zero‑touch claims, weekly pricing).
+   - Tech stack (Python + React Native + XGBoost + GNNs).
+5. **Upload the video** to YouTube (Unlisted) or Google Drive and add the link to the top of this README.
+
+---
+
+**Built for the Guidewire DEVTrails 2026 – AI‑Powered Insurance for India’s Gig Economy**
+🚀 Let’s build a safety net for the invisible backbone of India’s on‑demand economy.
