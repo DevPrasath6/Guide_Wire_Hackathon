@@ -406,35 +406,6 @@ This is the implementation checklist mapped to your requested outputs.
 
 ---
 
-## 🛠️ Tech Stack Summary
-
-### Frontend
-- **Primary:** **React Native** (mobile‑first for gig‑workers).
-- **Admin:** **React.js** web dashboard.
-
-### Backend
-- **Language:** **Python** (FastAPI) for clean API layer and ML integration.
-- **Database:** **PostgreSQL** (users, policies, claims) + **Redis** (real‑time caching).
-
-### AI / ML
-- **Risk & Pricing:**
-  - `scikit‑learn`, **XGBoost**, **LightGBM**.
-- **Fraud Detection:**
-  - **Isolation Forest** (anomaly detection).
-  - **NetworkX** / **PyTorch Geometric** (Graph ML).
-
-### APIs & Integrations
-- **Weather API:** OpenWeatherMap / AccuWeather (free tier / mocks).
-- **Traffic / Location:** Mapbox / Google Maps.
-- **Platform API:** Mock JSON endpoints simulating Zomato/Blinkit‑style data.
-- **Payments:** Razorpay test mode / Stripe sandbox / UPI simulator for instant‑payout demo.
-
-### Other Tools
-- **Git** + **GitHub** for version control and Phase‑1 Readme.
-- **Python virtual env** / **Docker** for reproducible setup (optional but recommended).
-
----
-
 ## 🗄️ Backend APIs & Database Architecture
 
 The backend of **Earnings Shield** is designed as a scalable, modular, and API-first system that powers policy management, real-time trigger monitoring, automated claims, and fraud detection.
@@ -706,6 +677,35 @@ All APIs are documented using:
 * ✅ Integrated **trigger monitoring system**
 * ✅ Mock-ready **payment and external APIs**
 * ✅ Scalable architecture ready for frontend & AI modules
+
+---
+
+## 🛠️ Tech Stack Summary
+
+### Frontend
+- **Primary:** **React Native** (mobile‑first for gig‑workers).
+- **Admin:** **React.js** web dashboard.
+
+### Backend
+- **Language:** **Python** (FastAPI) for clean API layer and ML integration.
+- **Database:** **PostgreSQL** (users, policies, claims) + **Redis** (real‑time caching).
+
+### AI / ML
+- **Risk & Pricing:**
+  - `scikit‑learn`, **XGBoost**, **LightGBM**.
+- **Fraud Detection:**
+  - **Isolation Forest** (anomaly detection).
+  - **NetworkX** / **PyTorch Geometric** (Graph ML).
+
+### APIs & Integrations
+- **Weather API:** OpenWeatherMap / AccuWeather (free tier / mocks).
+- **Traffic / Location:** Mapbox / Google Maps.
+- **Platform API:** Mock JSON endpoints simulating Zomato/Blinkit‑style data.
+- **Payments:** Razorpay test mode / Stripe sandbox / UPI simulator for instant‑payout demo.
+
+### Other Tools
+- **Git** + **GitHub** for version control and Phase‑1 Readme.
+- **Python virtual env** / **Docker** for reproducible setup (optional but recommended).
 
 ---
 
