@@ -1,4 +1,5 @@
 # Earnings Shield: AI‑Powered Parametric Income Protection for India’s Gig Economy
+
 **Guidewire DEVTrails 2026 – University Hackathon**
 
 ---
@@ -14,7 +15,8 @@ India’s gig‑economy delivery partners (Zomato, Swiggy, Zepto, Blinkit, etc.)
 ## 🎯 Target Persona
 
 ### **Persona:** Q‑commerce / Quick‑Commerce Delivery Partners
-*(e.g., Zepto, Blinkit, Swiggy Instamart riders)*
+
+_(e.g., Zepto, Blinkit, Swiggy Instamart riders)_
 
 - Operate in tight 2–3 km dark‑store zones.
 - Work under strict 10–15 minute SLAs.
@@ -22,6 +24,7 @@ India’s gig‑economy delivery partners (Zomato, Swiggy, Zepto, Blinkit, etc.)
 - No protection today when storms, pollution alerts, or local shutdowns force them offline.
 
 We chose **Q‑commerce** because:
+
 - Disruptions are **hyper‑local** and **instantly visible** in platform logs.
 - Lost income is easy to quantify (orders per hour, hourly wage).
 - This makes parametric triggers and AI‑based risk profiling very clean and demo‑friendly.
@@ -31,11 +34,13 @@ We chose **Q‑commerce** because:
 ## 🌩️ Core Problem Statement
 
 India’s gig‑economy delivery partners bear 100% of the financial risk when external disruptions occur:
+
 - Extreme heat, heavy rain, floods, or pollution spikes.
 - Local strikes, curfews, or sudden market/zone closures.
 - Platform outages or app‑level shutdowns in a specific area.
 
 During these events, riders:
+
 - Cannot work outdoors.
 - Cannot access pickup/drop locations.
 - Lose 20–30% of their monthly earnings with no safety net.
@@ -63,15 +68,16 @@ Earnings Shield strictly complies with the hackathon’s non‑negotiables:
 
 For our Q‑commerce persona, we define the following **external disruption parameters** (must use own ideation):
 
-| Trigger Type            | Example Event                                 | Impact on Income                                                                 |
-|-------------------------|-----------------------------------------------|-----------------------------------------------------------------------------------|
-| Environmental – Rain    | Heavy rain / waterlogging (>x mm/hr)          | Riders cannot operate bikes; dark stores pause orders in that zone.              |
-| Environmental – Heat    | Extreme heat (>45°C)                          | Riders taken offline during peak hours due to health advisories.                 |
-| Environmental – Pollution | Severe air‑quality alerts (e.g., AQI > 400) | Riders asked to avoid working; platform restricts zones.                         |
-| Social – Curfew/Strike  | Local strike, protest, or curfew              | No access to pickup/drop locations; SLAs cannot be met.                         |
-| Social – Platform/Zone  | App shutdown, dark‑store closure              | Zero orders in that radius for a fixed duration.                               |
+| Trigger Type              | Example Event                               | Impact on Income                                                    |
+| ------------------------- | ------------------------------------------- | ------------------------------------------------------------------- |
+| Environmental – Rain      | Heavy rain / waterlogging (>x mm/hr)        | Riders cannot operate bikes; dark stores pause orders in that zone. |
+| Environmental – Heat      | Extreme heat (>45°C)                        | Riders taken offline during peak hours due to health advisories.    |
+| Environmental – Pollution | Severe air‑quality alerts (e.g., AQI > 400) | Riders asked to avoid working; platform restricts zones.            |
+| Social – Curfew/Strike    | Local strike, protest, or curfew            | No access to pickup/drop locations; SLAs cannot be met.             |
+| Social – Platform/Zone    | App shutdown, dark‑store closure            | Zero orders in that radius for a fixed duration.                    |
 
 **Important:**
+
 - Triggers are **parametric** (data‑based), not based on claims filed by riders.
 - We **insure lost income**, not vehicle damage or bodily injury.
 
@@ -125,11 +131,13 @@ Earnings Shield is an AI‑enabled, mobile‑first platform that:
 
 **Goal:**
 Calculate a **personalized weekly premium** for each rider based on:
+
 - Operating zone (flood‑prone, traffic‑dense, etc.).
 - Historical disruption data (rain, heat, AQI).
 - Typical working hours and days.
 
 **Model:**
+
 - Use **XGBoost or LightGBM** for tabular risk‑scoring.
 - Inputs:
   - Historical weather data per zone.
@@ -139,6 +147,7 @@ Calculate a **personalized weekly premium** for each rider based on:
   - A **risk score** → mapped to weekly premium (e.g., ₹18 vs ₹35/week).
 
 **Why this wins:**
+
 - True **predictive risk modeling** for the persona.
 - Matches the “dynamic premium calculation” requirement.
 
@@ -148,6 +157,7 @@ Calculate a **personalized weekly premium** for each rider based on:
 
 **Goal:**
 Catch delivery‑specific fraud such as:
+
 - GPS spoofing (sudden jumps).
 - Fake inactivity or collusion to fake disruption claims.
 
@@ -169,6 +179,7 @@ Catch delivery‑specific fraud such as:
   - Collusive patterns across multiple riders.
 
 **Impact:**
+
 - Meets the “intellectual fraud detection” requirement.
 - Combines anomaly detection, location validation, and duplicate‑claim prevention.
 
@@ -177,6 +188,7 @@ Catch delivery‑specific fraud such as:
 ### 3. **Parametric Automation (Zero‑Touch Claims)**
 
 **Goal:**
+
 - No manual claim filing.
 - Automatic claim initiation and payout based on triggers.
 
@@ -261,6 +273,7 @@ The onboarding experience is designed to complete in **under 2 minutes** for fir
 #### Onboarding Output Data
 
 At completion, the app must store:
+
 - Worker identity + platform ID.
 - Zone and shift profile.
 - Baseline income assumptions.
@@ -275,6 +288,7 @@ Policy UX should be simple enough for a rider to understand in a 10–15 second 
 #### A. Policy Purchase Screen
 
 Must show:
+
 - Suggested **weekly premium** (AI generated).
 - Coverage amount cap (weekly protected income limit).
 - Trigger types covered in current zone (rain, heat, AQI, curfew, platform-down).
@@ -284,6 +298,7 @@ Must show:
 #### B. Active Policy Screen
 
 Must show:
+
 - Current policy status: `Active / Expiring Soon / Inactive`.
 - Days left in weekly cycle.
 - Total earnings protected this week.
@@ -292,6 +307,7 @@ Must show:
 #### C. Renewal Screen
 
 Must show:
+
 - Renewal due date.
 - New premium suggestion for next week (based on updated risk).
 - Change summary (`premium ↑/↓` + reason such as weather forecast risk).
@@ -306,6 +322,7 @@ Claims are designed as **zero‑touch first**, with full transparency to the wor
 #### A. Auto‑Claim Status Screen
 
 When trigger event occurs, worker sees:
+
 - Event detected (e.g., heavy rain threshold crossed in Zone A).
 - Claim state timeline:
   - `Trigger Detected`
@@ -316,6 +333,7 @@ When trigger event occurs, worker sees:
 #### B. Payout Status Screen
 
 Must show:
+
 - Estimated income loss formula result (`impacted hours × hourly baseline`).
 - Approved payout amount.
 - Transfer status: `Processing / Sent / Settled`.
@@ -324,11 +342,13 @@ Must show:
 #### C. Claim History Screen
 
 Must show a filterable list by:
+
 - Week.
 - Trigger type.
 - Status.
 
 Each claim record includes:
+
 - Date/time.
 - Trigger event type.
 - Claimed amount.
@@ -422,88 +442,88 @@ The system uses **PostgreSQL** as the primary relational database to ensure cons
 
 **1. Users Table**
 
-* `id` (UUID)
-* `name`
-* `mobile_number`
-* `platform_type` (Zepto / Blinkit / etc.)
-* `platform_worker_id`
-* `zone_id`
-* `hourly_wage`
-* `work_schedule` (JSON)
-* `created_at`
+- `id` (UUID)
+- `name`
+- `mobile_number`
+- `platform_type` (Zepto / Blinkit / etc.)
+- `platform_worker_id`
+- `zone_id`
+- `hourly_wage`
+- `work_schedule` (JSON)
+- `created_at`
 
 ---
 
 **2. Zones Table**
 
-* `id`
-* `city`
-* `zone_name`
-* `risk_level` (Low / Medium / High)
-* `geo_coordinates`
+- `id`
+- `city`
+- `zone_name`
+- `risk_level` (Low / Medium / High)
+- `geo_coordinates`
 
 ---
 
 **3. Policies Table**
 
-* `id`
-* `user_id`
-* `weekly_premium`
-* `coverage_limit`
-* `start_date`
-* `end_date`
-* `status` (Active / Expired / Cancelled)
-* `risk_score`
-* `created_at`
+- `id`
+- `user_id`
+- `weekly_premium`
+- `coverage_limit`
+- `start_date`
+- `end_date`
+- `status` (Active / Expired / Cancelled)
+- `risk_score`
+- `created_at`
 
 ---
 
 **4. Triggers Table**
 
-* `id`
-* `trigger_type` (Rain / Heat / AQI / Curfew / Platform Down)
-* `zone_id`
-* `threshold_value`
-* `current_value`
-* `trigger_status` (Active / Inactive)
-* `timestamp`
+- `id`
+- `trigger_type` (Rain / Heat / AQI / Curfew / Platform Down)
+- `zone_id`
+- `threshold_value`
+- `current_value`
+- `trigger_status` (Active / Inactive)
+- `timestamp`
 
 ---
 
 **5. Claims Table**
 
-* `id`
-* `user_id`
-* `policy_id`
-* `trigger_id`
-* `hours_impacted`
-* `estimated_loss`
-* `approved_amount`
-* `status` (Pending / Approved / Rejected)
-* `created_at`
+- `id`
+- `user_id`
+- `policy_id`
+- `trigger_id`
+- `hours_impacted`
+- `estimated_loss`
+- `approved_amount`
+- `status` (Pending / Approved / Rejected)
+- `created_at`
 
 ---
 
 **6. Payouts Table**
 
-* `id`
-* `claim_id`
-* `amount`
-* `status` (Processing / Completed / Failed)
-* `transaction_reference`
-* `processed_at`
+- `id`
+- `claim_id`
+- `amount`
+- `status` (Processing / Completed / Failed)
+- `transaction_reference`
+- `processed_at`
 
 ---
 
 **7. Fraud Flags Table**
 
-* `id`
-* `user_id`
-* `claim_id`
-* `fraud_type` (GPS Spoof / Behavior Anomaly / Collusion)
-* `confidence_score`
-* `status` (Flagged / Reviewed / Cleared)
-* `created_at`
+- `id`
+- `user_id`
+- `claim_id`
+- `fraud_type` (GPS Spoof / Behavior Anomaly / Collusion)
+- `confidence_score`
+- `status` (Flagged / Reviewed / Cleared)
+- `created_at`
 
 ---
 
@@ -515,85 +535,70 @@ The backend is built using **FastAPI**, ensuring high performance and easy integ
 
 #### 🔐 Authentication & User APIs
 
-* `POST /auth/login`
+- `POST /auth/login`
+  - Mobile + OTP authentication (mock supported)
 
-  * Mobile + OTP authentication (mock supported)
+- `POST /users/create-profile`
+  - Create user profile after onboarding
 
-* `POST /users/create-profile`
-
-  * Create user profile after onboarding
-
-* `GET /users/{id}`
-
-  * Fetch user details and profile
+- `GET /users/{id}`
+  - Fetch user details and profile
 
 ---
 
 #### 📅 Policy Management APIs
 
-* `POST /policies/create`
+- `POST /policies/create`
+  - Generate weekly policy using AI risk score
 
-  * Generate weekly policy using AI risk score
+- `GET /policies/{user_id}`
+  - Retrieve active and past policies
 
-* `GET /policies/{user_id}`
-
-  * Retrieve active and past policies
-
-* `POST /policies/renew`
-
-  * Renew policy with updated premium
+- `POST /policies/renew`
+  - Renew policy with updated premium
 
 ---
 
 #### 🌩️ Trigger Monitoring APIs
 
-* `GET /triggers/active`
+- `GET /triggers/active`
+  - Fetch all active disruption triggers in zones
 
-  * Fetch all active disruption triggers in zones
-
-* `POST /triggers/update`
-
-  * Update trigger values from external APIs (weather, AQI, etc.)
+- `POST /triggers/update`
+  - Update trigger values from external APIs (weather, AQI, etc.)
 
 ---
 
 #### ⚡ Claim Pipeline APIs (Zero-Touch)
 
-* `POST /claims/auto-initiate`
+- `POST /claims/auto-initiate`
+  - Automatically create claim when trigger conditions are met
 
-  * Automatically create claim when trigger conditions are met
+- `GET /claims/{user_id}`
+  - Fetch all claims for a user
 
-* `GET /claims/{user_id}`
-
-  * Fetch all claims for a user
-
-* `GET /claims/status/{claim_id}`
-
-  * Track claim processing status
+- `GET /claims/status/{claim_id}`
+  - Track claim processing status
 
 ---
 
 #### 💰 Payout APIs
 
-* `POST /payouts/process`
+- `POST /payouts/process`
+  - Simulate instant payout via mock payment gateway
 
-  * Simulate instant payout via mock payment gateway
-
-* `GET /payouts/{claim_id}`
-
-  * Get payout details and transaction status
+- `GET /payouts/{claim_id}`
+  - Get payout details and transaction status
 
 ---
 
 #### 🧠 Fraud Detection APIs
 
-* `POST /fraud/analyze`
+- `POST /fraud/analyze`
+  - Run anomaly detection on claim activity
 
-  * Run anomaly detection on claim activity
-
-* `GET /fraud/flags`
-
-  * Fetch flagged suspicious claims
+- `GET /fraud/flags`
+  - Fetch flagged suspicious claims
 
 ---
 
@@ -601,24 +606,21 @@ The backend is built using **FastAPI**, ensuring high performance and easy integ
 
 To support parametric triggers, the backend integrates with multiple external (or mocked) data sources:
 
-* **Weather APIs**
+- **Weather APIs**
+  - Rainfall intensity, temperature, AQI levels
 
-  * Rainfall intensity, temperature, AQI levels
+- **Traffic APIs**
+  - Congestion levels, road closures
 
-* **Traffic APIs**
-
-  * Congestion levels, road closures
-
-* **Platform APIs (Mock)**
-
-  * Order volume per zone
-  * Rider activity status
+- **Platform APIs (Mock)**
+  - Order volume per zone
+  - Rider activity status
 
 All data pipelines are:
 
-* Cached using **Redis**
-* Processed at regular intervals
-* Mapped to trigger thresholds
+- Cached using **Redis**
+- Processed at regular intervals
+- Mapped to trigger thresholds
 
 ---
 
@@ -628,9 +630,9 @@ The backend includes an automated **event-driven claim engine**:
 
 1. Trigger crosses threshold (e.g., heavy rain detected)
 2. System checks:
+   - Active users in affected zone
+   - Drop in order volume
 
-   * Active users in affected zone
-   * Drop in order volume
 3. Eligible users identified
 4. Claim auto-created
 5. Fraud analysis executed
@@ -642,8 +644,8 @@ The backend includes an automated **event-driven claim engine**:
 
 All APIs are documented using:
 
-* **Swagger UI (FastAPI built-in)**
-* Example request/response payloads
+- **Swagger UI (FastAPI built-in)**
+- Example request/response payloads
 
 #### Example: Policy Creation Request
 
@@ -671,26 +673,209 @@ All APIs are documented using:
 
 ### 🚀 Backend Deliverables
 
-* ✅ Fully functional **FastAPI backend**
-* ✅ Structured **PostgreSQL schema + migrations**
-* ✅ End-to-end **policy & claims engine**
-* ✅ Integrated **trigger monitoring system**
-* ✅ Mock-ready **payment and external APIs**
-* ✅ Scalable architecture ready for frontend & AI modules
+- ✅ Fully functional **FastAPI backend**
+- ✅ Structured **PostgreSQL schema + migrations**
+- ✅ End-to-end **policy & claims engine**
+- ✅ Integrated **trigger monitoring system**
+- ✅ Mock-ready **payment and external APIs**
+- ✅ Scalable architecture ready for frontend & AI modules
+
+---
+
+## 👨‍💻 Admin Dashboard and Analytics UI
+
+To make the insurer-side experience execution-ready for demos, this section defines the **admin dashboard journey** in concrete UI and analytics terms.
+
+### 1) Dashboard Layout (Insurer Control Center)
+
+The admin dashboard is designed for **at-a-glance operational visibility** with fast drill-down into claims, fraud, and disruption trends.
+
+#### Layout Structure
+
+1. **Top Summary Row (KPI Cards)**
+
+- Total active policies.
+- Claims triggered today.
+- Total payout amount (selected period).
+- Fraud alerts count.
+
+2. **Primary Analytics Area**
+
+- Risk heatmap by city/zone.
+- Disruption trend chart over time.
+
+3. **Operations Panel Area**
+
+- Claims monitoring table.
+- Fraud alerts and flagged rider list.
+
+4. **Persistent Filter Bar**
+
+- Global filters applied across all widgets.
+- Quick reset and preset date ranges.
+
+---
+
+### 2) Claims Monitoring Section (Status, Amount, Trigger Type, Zone)
+
+The claims panel should support real-time operational review and quick exception detection.
+
+#### Claims Table Requirements
+
+Each claim record must show:
+
+- Claim ID.
+- Rider ID / rider name (masked if required for demo privacy).
+- City and micro-zone.
+- Trigger type (`Rain`, `Heat`, `AQI`, `Curfew`, `Platform-Down`).
+- Claim status (`Triggered`, `Eligibility Check`, `Approved`, `Rejected`, `Paid`).
+- Estimated loss amount.
+- Approved payout amount.
+- Last updated timestamp.
+
+#### Claims Panel Actions
+
+- Sort by status, amount, and latest update.
+- Filter by city, zone, date range, and trigger type.
+- Open claim detail drawer for timeline and reason log.
+- Highlight claims stuck in non-terminal states beyond threshold SLA.
+
+---
+
+### 3) Risk Heatmap and Disruption Trend Visualization
+
+This section provides predictive and historical risk visibility for planning underwriting and operations.
+
+#### A. Risk Heatmap Widget
+
+Must visualize:
+
+- Zone-level risk intensity (`Low / Medium / High`) using AI risk score bands.
+- City-to-zone drill-down (city overview → micro-zone detail).
+- Hover/tooltip values:
+  - Risk score.
+  - Dominant trigger type.
+  - Predicted disruption likelihood for next 7 days.
+
+#### B. Disruption Trend Widget
+
+Must visualize:
+
+- Time-series trend of disruption events (daily/weekly view).
+- Trigger-wise stacked trend (`Rain`, `Heat`, `AQI`, `Curfew`, `Platform-Down`).
+- Overlay for claims triggered vs claims paid.
+- Quick period switch (`7D`, `30D`, custom date range).
+
+---
+
+### 4) Fraud Alerts Section (Flagged Rider List)
+
+The fraud panel should provide immediate visibility into suspicious behavior and risk clusters.
+
+#### Fraud Alerts Table Requirements
+
+Each flagged rider record must show:
+
+- Rider ID.
+- City and zone.
+- Fraud risk score.
+- Alert type (`GPS Spoofing`, `Suspicious Inactivity`, `Collusion Pattern`, `Repeat Trigger Abuse`).
+- Linked claim IDs count.
+- Current review state (`New`, `Under Review`, `Escalated`, `Cleared`).
+- Last alert timestamp.
+
+#### Fraud Panel Behaviors
+
+- Severity color tags for quick triage.
+- Sort by fraud score descending.
+- Click-to-open rider fraud profile summary.
+- Show related claims and anomaly reasons in one view.
+
+---
+
+### 5) Dashboard Filters (City, Zone, Date Range, Trigger Type)
+
+Filters are global and must update all analytics and tables in sync.
+
+#### Required Filters
+
+- **City** (single-select or multi-select).
+- **Zone** (dependent on selected city).
+- **Date Range** (`Today`, `Last 7 Days`, `Last 30 Days`, `Custom`).
+- **Trigger Type** (`All`, `Rain`, `Heat`, `AQI`, `Curfew`, `Platform-Down`).
+
+#### Filter UX Rules
+
+- Applied filters are visible as removable chips.
+- “Reset All” restores default dashboard state.
+- Empty-state messages appear when no records match.
+- Filter state persists during in-dashboard navigation.
+
+---
+
+### 6) Admin Demo Walkthrough Script
+
+Use this flow during demo to present insurer-grade visibility clearly.
+
+1. **Open Dashboard Overview**
+
+- Show KPI cards for policies, claims, payouts, and fraud alerts.
+
+2. **Inspect Claims Monitoring**
+
+- Filter by city/zone and demonstrate status progression.
+- Open one claim timeline.
+
+3. **Review Risk Widgets**
+
+- Show heatmap hotspots.
+- Switch trend view from `7D` to `30D`.
+
+4. **Investigate Fraud Alerts**
+
+- Sort flagged riders by fraud score.
+- Open one rider’s alert detail with linked claims.
+
+5. **Demonstrate Filtered Analytics View**
+
+- Apply `Date + Trigger Type` filters.
+- Show synchronized updates across all widgets and panels.
+
+---
+
+### 7) Admin Dashboard Deliverables Checklist
+
+This checklist maps directly to the requested admin scope.
+
+- ✅ **Admin dashboard v1 complete**
+  - Core layout, KPI row, analytics area, operations panels, and filter bar.
+
+- ✅ **Claims and fraud visibility panels**
+  - Claims monitoring table with status and amount tracking.
+  - Fraud alerts table with flagged rider list and severity signals.
+
+- ✅ **Risk trend widgets**
+  - Zone-level risk heatmap and disruption trend visualization.
+
+- ✅ **Filtered analytics view**
+  - Global filters for city, zone, date range, and trigger type with synced updates.
 
 ---
 
 ## 🛠️ Tech Stack Summary
 
 ### Frontend
+
 - **Primary:** **React Native** (mobile‑first for gig‑workers).
 - **Admin:** **React.js** web dashboard.
 
 ### Backend
+
 - **Language:** **Python** (FastAPI) for clean API layer and ML integration.
 - **Database:** **PostgreSQL** (users, policies, claims) + **Redis** (real‑time caching).
 
 ### AI / ML
+
 - **Risk & Pricing:**
   - `scikit‑learn`, **XGBoost**, **LightGBM**.
 - **Fraud Detection:**
@@ -698,12 +883,14 @@ All APIs are documented using:
   - **NetworkX** / **PyTorch Geometric** (Graph ML).
 
 ### APIs & Integrations
+
 - **Weather API:** OpenWeatherMap / AccuWeather (free tier / mocks).
 - **Traffic / Location:** Mapbox / Google Maps.
 - **Platform API:** Mock JSON endpoints simulating Zomato/Blinkit‑style data.
 - **Payments:** Razorpay test mode / Stripe sandbox / UPI simulator for instant‑payout demo.
 
 ### Other Tools
+
 - **Git** + **GitHub** for version control and Phase‑1 Readme.
 - **Python virtual env** / **Docker** for reproducible setup (optional but recommended).
 
@@ -712,13 +899,16 @@ All APIs are documented using:
 ## 🗺️ 6‑Week Project Roadmap (DEVTrails 2026)
 
 ### **Phase 1: Ideation & Foundation (March 4 – March 20)**
+
 **Theme:** “Ideate & Know Your Delivery Worker”
 
 **Deliverables:**
+
 - GitHub repo with this `README.md` as the **Idea Document**.
 - 2‑minute video link (public) outlining strategy, persona, and prototype scope.
 
 **Key Tasks:**
+
 - Lock target persona: **Q‑commerce delivery partners**.
 - Define 3–5 **parametric triggers** (rain, heat, pollution, curfew, platform‑down).
 - Finalize **weekly premium model** and AI‑stack.
@@ -728,13 +918,16 @@ All APIs are documented using:
 ---
 
 ### **Phase 2: Automation & Protection (March 21 – April 4)**
+
 **Theme:** “Protect Your Worker”
 
 **Deliverables:**
+
 - Executable source code (backend + frontend starter).
 - 2‑minute demo video of core flows.
 
 **Key Tasks:**
+
 - Build **registration and onboarding UI**.
 - Implement **weekly policy management** (create, view, renew).
 - Train **XGBoost model** for dynamic weekly pricing based on mock data.
@@ -745,15 +938,18 @@ All APIs are documented using:
 ---
 
 ### **Phase 3: Scale & Optimise (April 5 – April 17)**
+
 **Theme:** “Perfect for Your Worker”
 
 **Deliverables:**
+
 - Advanced fraud‑detection implementation.
 - Instant payout simulation integrated.
 - Intelligent analytics dashboards.
 - 5‑minute demo video and final pitch deck (PDF).
 
 **Key Tasks:**
+
 - Implement **Isolation Forest** and **Graph ML** for fraud detection.
 - Fine‑tune fraud rules to catch GPS spoofing, fake inactivity, and collusion.
 - Polish **worker dashboard** (active coverage, protected earnings).
@@ -766,18 +962,19 @@ All APIs are documented using:
 
 ## ✅ How This Meets the Must‑Have Features
 
-| Requirement                          | How Earnings Shield Addresses It                                                                 |
-|--------------------------------------|---------------------------------------------------------------------------------------------------|
-| **Optimized onboarding**            | Mobile‑first app with quick onboarding for Q‑commerce riders, linked to their platform ID.      |
-| **Risk profiling using AI/ML**      | XGBoost/LightGBM model for zone‑based risk and dynamic weekly premiums.                         |
-| **Weekly pricing model**            | Strictly weekly micro‑premium; no hourly or long‑term plans.                                     |
-| **Parametric triggers**             | Weather, traffic, and platform‑API events automatically trigger loss‑of‑income checks.          |
-| **Zero‑touch claim initiation**     | System auto‑detects disruptions and initiates claims without rider input.                        |
-| **Instant payout processing**       | Mock payment gateway (Razorpay / Stripe / UPI) simulates instant wage recovery.                 |
-| **Fraud detection**                 | Isolation Forest + Graph ML for GPS spoofing, fake inactivity, collusion.                      |
-| **Analytics dashboard**             | Worker and insurer dashboards showing coverage, protected earnings, and risk metrics.          |
+| Requirement                     | How Earnings Shield Addresses It                                                           |
+| ------------------------------- | ------------------------------------------------------------------------------------------ |
+| **Optimized onboarding**        | Mobile‑first app with quick onboarding for Q‑commerce riders, linked to their platform ID. |
+| **Risk profiling using AI/ML**  | XGBoost/LightGBM model for zone‑based risk and dynamic weekly premiums.                    |
+| **Weekly pricing model**        | Strictly weekly micro‑premium; no hourly or long‑term plans.                               |
+| **Parametric triggers**         | Weather, traffic, and platform‑API events automatically trigger loss‑of‑income checks.     |
+| **Zero‑touch claim initiation** | System auto‑detects disruptions and initiates claims without rider input.                  |
+| **Instant payout processing**   | Mock payment gateway (Razorpay / Stripe / UPI) simulates instant wage recovery.            |
+| **Fraud detection**             | Isolation Forest + Graph ML for GPS spoofing, fake inactivity, collusion.                  |
+| **Analytics dashboard**         | Worker and insurer dashboards showing coverage, protected earnings, and risk metrics.      |
 
 ---
+
 ## 👨‍💻 Member 4: AI/ML, Trigger Engine, and Fraud Detection
 
 This section details the core AI/ML implementation responsibilities for risk modeling, parametric trigger evaluation, and fraud detection systems.
@@ -785,6 +982,7 @@ This section details the core AI/ML implementation responsibilities for risk mod
 ### Overview
 
 Member 4 owns the **intelligence layer** of Earnings Shield, responsible for:
+
 1. Building and training the **dynamic premium model** (XGBoost/LightGBM).
 2. Implementing the **parametric trigger evaluation engine** with real-time event monitoring.
 3. Designing and deploying **fraud detection modules** (anomaly detection + collusion detection).
@@ -796,17 +994,20 @@ Member 4 owns the **intelligence layer** of Earnings Shield, responsible for:
 ### 1. Dynamic Risk Scoring Model (Weekly Premium Calculation)
 
 #### Objective
+
 Build a **predictive risk-scoring model** that generates personalized, data-driven weekly premiums for each Q-commerce delivery partner based on zone characteristics, historical disruption patterns, and rider behavior.
 
 #### Model Architecture
 
 **Algorithm:** **XGBoost** or **LightGBM** (gradient boosted decision trees)
+
 - Chosen for fast inference, interpretability, and handling mixed feature types.
 - Suitable for tabular data with non-linear relationships.
 
 #### Feature Engineering
 
 **Zone-Level Features:**
+
 - `zone_id`: Encoded ID of the delivery zone.
 - `avg_rainfall_mm`: Historical average rainfall in zone (last 5 years).
 - `flood_risk_score`: Zone vulnerability to waterlogging (0–1 scale).
@@ -816,6 +1017,7 @@ Build a **predictive risk-scoring model** that generates personalized, data-driv
 - `traffic_congestion_index`: Historical traffic congestion during peak hours.
 
 **Rider-Level Features:**
+
 - `years_on_platform`: Tenure on delivery platform.
 - `avg_weekly_earnings`: Baseline income from last 12 weeks.
 - `avg_orders_per_shift`: Historical order volume per shift.
@@ -826,6 +1028,7 @@ Build a **predictive risk-scoring model** that generates personalized, data-driv
 - `sla_breach_rate`: Percentage of SLA breaches (SLA = 10–15 min for Q-commerce).
 
 **Environmental Forecast Features (Dynamic):**
+
 - `rain_forecast_next_week`: Predicted rainfall for upcoming week (mm).
 - `heat_alert_forecast`: Boolean for heat advisory in next week.
 - `aqi_forecast`: Forecasted AQI for next week.
@@ -833,6 +1036,7 @@ Build a **predictive risk-scoring model** that generates personalized, data-driv
 - `platform_downtime_risk`: Estimated server/app uptime risk for that zone.
 
 #### Target Variable
+
 - `premium_base` (₹/week): Historical baseline premium derived from:
   - Historical loss ratio = (claims paid / premiums collected) for similar riders.
   - Adjusted by zone and rider risk tiers.
@@ -887,7 +1091,7 @@ Steps:
 2. Fetch zone + latest weather/forecast data → extract zone and environment features.
 3. Concatenate all features → preprocess (standardize, encode).
 4. Pass through trained XGBoost model → get risk_score (0–1 scale).
-5. Convert risk_score to premium: 
+5. Convert risk_score to premium:
    premium = base_price * (1 + risk_score * multiplier)
    Example: base = ₹20, risk_score = 0.6, multiplier = 2.0 → premium = ₹20 * 2.2 = ₹44.
 6. Apply caps (min ₹15/week, max ₹100/week) to ensure affordability.
@@ -897,12 +1101,14 @@ Steps:
 #### Model Validation & Documentation
 
 **Metrics to Publish:**
+
 - Overall R² and RMSE.
 - Zone-wise RMSE (to identify zones with high model error).
 - Top 10 feature importances (SHAP values).
 - Confusion matrix for premium tier accuracy (if discretized into Low/Medium/High tiers).
 
 **Validation Notes:**
+
 - Document any data gaps or anomalies during training.
 - Flag if specific zones have insufficient training data.
 - Cross-validate against business logic (e.g., premium should increase with rainfall risk).
@@ -912,6 +1118,7 @@ Steps:
 ### 2. Parametric Trigger Evaluation Engine
 
 #### Objective
+
 Build an **event-driven trigger evaluation service** that monitors real-time disruption events, validates rider eligibility, determines event duration and severity, and auto-initiates claims in zero-touch fashion.
 
 #### Trigger Definitions & Thresholds
@@ -919,6 +1126,7 @@ Build an **event-driven trigger evaluation service** that monitors real-time dis
 A trigger is a **parametric event** that, when detected and validated, automatically initiates a claim without manual rider input.
 
 **Trigger 1: Heavy Rain / Waterlogging**
+
 - **Metric:** Rainfall amount (mm/hour) from OpenWeatherMap or weather API.
 - **Threshold:** ≥ 15 mm/hour in a specific zone.
 - **Duration Rule:** Event persists for ≥ 30 minutes.
@@ -929,6 +1137,7 @@ A trigger is a **parametric event** that, when detected and validated, automatic
 - **Claim Trigger:** If all conditions met, flag for auto-claim initiation.
 
 **Trigger 2: Extreme Heat / Heat Advisory**
+
 - **Metric:** Temperature (°C) from weather API.
 - **Threshold:** ≥ 45°C for ≥ 2 hours, OR government heat health advisory issued.
 - **Duration Rule:** Event lasts ≥ 2 consecutive hours.
@@ -939,6 +1148,7 @@ A trigger is a **parametric event** that, when detected and validated, automatic
 - **Claim Trigger:** Auto-claim after eligibility check.
 
 **Trigger 3: Severe Air Quality (AQI > 400)**
+
 - **Metric:** AQI from weather API (e.g., OpenWeatherMap).
 - **Threshold:** AQI ≥ 400 (Severe, hazardous).
 - **Duration Rule:** Event lasts ≥ 1 hour.
@@ -949,6 +1159,7 @@ A trigger is a **parametric event** that, when detected and validated, automatic
 - **Claim Trigger:** Auto-claim if eligibility and platform status confirmed.
 
 **Trigger 4: Curfew / Strike / Social Disruption**
+
 - **Metric:** Manual data entry or third-party event API (e.g., GoogleMaps alerts, location-services).
 - **Threshold:** Curfew or strike declared in specific zone.
 - **Duration Rule:** Event marked as active for declared duration.
@@ -959,8 +1170,9 @@ A trigger is a **parametric event** that, when detected and validated, automatic
 - **Claim Trigger:** Auto-claim if all conditions met.
 
 **Trigger 5: Platform Downtime / Zone Closure**
+
 - **Metric:** Platform API health status or order volume anomaly detection.
-- **Threshold:** 
+- **Threshold:**
   - Reported API downtime > 15 minutes, OR
   - Order volume in zone drops to < 5% of hourly baseline for ≥ 30 minutes.
 - **Duration Rule:** > 30 minutes of continuous downtime or low traffic.
@@ -1056,6 +1268,7 @@ A trigger is a **parametric event** that, when detected and validated, automatic
 ### 3. Fraud Detection & Anomaly Detection
 
 #### Objective
+
 Detect suspicious behavior, GPS spoofing, fake inactivity claims, and collusion patterns to prevent fraudulent claims while maintaining system trust.
 
 #### 3A. Anomaly Detection in Location & Activity (Isolation Forest)
@@ -1064,12 +1277,14 @@ Detect suspicious behavior, GPS spoofing, fake inactivity claims, and collusion 
 Some riders may claim disruption events but fabricate their location or activity state to fraudulently collect payouts.
 
 **Anomalies to Detect:**
+
 - **GPS Jump Anomaly:** Rider teleports 10+ km in 2 minutes (impossible by bike).
 - **Fake Inactivity:** Rider claims inactive due to disruption, but GPS shows movement in safe zones.
 - **Shift Pattern Anomaly:** Rider suddenly works 22 hours/day (unrealistic).
 - **Order-to-Earnings Mismatch:** Claims huge income loss, but order history shows low activity.
 
 **Model: Isolation Forest**
+
 - Unsupervised anomaly detection.
 - Separates normal behavior from outliers via random isolation trees.
 - Lightweight and fast for streaming data.
@@ -1103,11 +1318,13 @@ Some riders may claim disruption events but fabricate their location or activity
 ```
 
 **Training:**
+
 - Use 3–6 months of historical rider data (GPS, orders, timings).
 - Mark known fraud cases as "anomaly = 1" for validation.
 - Train Isolation Forest with `contamination=0.05` (assume 5% anomaly rate).
 
 **Inference (Real-Time):**
+
 ```
 On each claim auto-initiated:
 1. Extract rider's 1-hour activity window before disruption event.
@@ -1121,6 +1338,7 @@ On each claim auto-initiated:
 ```
 
 **Output:**
+
 - `anomaly_score` (0–1): Higher = more suspicious.
 - `flagged_features`: List of features that contributed to anomaly (interpretability).
 - `recommendation`: "Approve", "Review Manually", or "Reject".
@@ -1133,6 +1351,7 @@ On each claim auto-initiated:
 Multiple riders in the same zone may collude to claim fake disruptions simultaneously, inflating loss ratios and defrauding the insurer.
 
 **Collusion Patterns:**
+
 - **Synchronized Offline Events:** 10+ riders in zone claim inactivity at same time, but zone traffic is normal.
 - **Fake Mutual Help:** Riders trade orders to inflate individual claim amounts.
 - **Reverse SLA:** Riders deliberately breach SLA to avoid being forced offline (suspicious).
@@ -1140,6 +1359,7 @@ Multiple riders in the same zone may collude to claim fake disruptions simultane
 **Model: Graph-Based Collusion Detection**
 
 Build a **rider network graph** where:
+
 - **Nodes:** Rider IDs.
 - **Edges:** Weighted by:
   - `co_occurrence_count`: Times they're active in same zone at same time.
@@ -1147,11 +1367,13 @@ Build a **rider network graph** where:
   - `dispute_rate`: Reverse correlation (claim together, but different stories).
 
 **Algorithm:**
+
 1. **Community Detection (Louvain Method):**
    - Identify clusters of riders who frequently interact/claim together.
    - Retrieve highly connected communities.
 
 2. **Anomalous Community Scoring:**
+
    ```
    For each detected community:
    ├─ Calculate avg loss ratio for that community.
@@ -1175,11 +1397,13 @@ Build a **rider network graph** where:
    ```
 
 **Graph Construction (Batch Job):**
+
 - Run weekly on historical claim data.
 - Rank all rider communities by collusion risk.
 - Store results in /outputs/fraud_detection/community_graph.json.
 
 **Output:**
+
 - `collusion_score` (0–1): Higher = more likely fraudulent ring.
 - `community_id`: Rider cluster ID.
 - `community_size`: Number of riders in cluster.
@@ -1197,10 +1421,10 @@ def compute_fraud_score(rider_id, claim_id):
     anomaly_score = isolation_forest_predict(rider_id)
     community = graph_db.get_rider_community(rider_id)
     collusion_score = compute_community_anomaly(community)
-    
+
     # Weighted combination
     fraud_score = (0.6 * anomaly_score) + (0.4 * collusion_score)
-    
+
     if fraud_score > 0.75:
         return "REJECT"  # High confidence fraud
     elif fraud_score > 0.50:
@@ -1244,6 +1468,7 @@ def compute_fraud_score(rider_id, claim_id):
 **Endpoint:** `POST /api/risk/score`
 
 **Request:**
+
 ```json
 {
   "rider_id": "R12345",
@@ -1253,12 +1478,13 @@ def compute_fraud_score(rider_id, claim_id):
 ```
 
 **Response:**
+
 ```json
 {
   "rider_id": "R12345",
   "risk_score": 0.62,
-  "weekly_premium": 42.50,
-  "premium_range": [38.00, 48.00],
+  "weekly_premium": 42.5,
+  "premium_range": [38.0, 48.0],
   "risk_tier": "MEDIUM",
   "top_features": [
     { "feature": "avg_rainfall_mm", "importance": 0.18 },
@@ -1277,6 +1503,7 @@ def compute_fraud_score(rider_id, claim_id):
 **Endpoint:** `POST /api/triggers/evaluate`
 
 **Request:**
+
 ```json
 {
   "event_type": "heavy_rain",
@@ -1288,6 +1515,7 @@ def compute_fraud_score(rider_id, claim_id):
 ```
 
 **Response:**
+
 ```json
 {
   "event_id": "EVT_67890",
@@ -1311,7 +1539,7 @@ def compute_fraud_score(rider_id, claim_id):
     }
   ],
   "claims_initiated": 12,
-  "total_payout_estimated": 3450.00,
+  "total_payout_estimated": 3450.0,
   "processed_at": "2026-03-18T14:05:00Z"
 }
 ```
@@ -1323,6 +1551,7 @@ def compute_fraud_score(rider_id, claim_id):
 **Endpoint:** `POST /api/fraud/check`
 
 **Request:**
+
 ```json
 {
   "claim_id": "CLM_11111",
@@ -1331,6 +1560,7 @@ def compute_fraud_score(rider_id, claim_id):
 ```
 
 **Response:**
+
 ```json
 {
   "claim_id": "CLM_11111",
@@ -1339,10 +1569,7 @@ def compute_fraud_score(rider_id, claim_id):
   "collusion_score": 0.12,
   "fraud_score": 0.35,
   "recommendation": "APPROVE",
-  "flagged_features": [
-    "zone_change_frequency",
-    "time_since_last_order"
-  ],
+  "flagged_features": ["zone_change_frequency", "time_since_last_order"],
   "community_info": {
     "community_id": "C001",
     "community_size": 45,
@@ -1393,21 +1620,25 @@ def compute_fraud_score(rider_id, claim_id):
 # Risk Scoring Model Card
 
 ## Model Details
+
 - **Algorithm:** XGBoost
 - **Training Date:** 2026-03-18
 - **Data Cutoff:** 2025-09-18 (6 months historical)
 - **Version:** 1.0
 
 ## Performance
+
 - **R² Score:** 0.82
 - **RMSE:** ₹8.40 (mean premium ₹48)
 - **MAE:** ₹6.20
 
 ## Limitations
+
 - Insufficient training data for zones with < 50 riders.
 - Model trained on 2024–2025 data; may not generalize to 2026 climate anomalies.
 
 ## Recommendations
+
 - Retrain quarterly with fresh data.
 - Monitor zone-level residuals for concept drift.
 ```
@@ -1418,12 +1649,14 @@ def compute_fraud_score(rider_id, claim_id):
 # Parametric Trigger Definitions
 
 ## Trigger 1: Heavy Rain
+
 - **Threshold:** ≥ 15 mm/hour
 - **Duration:** ≥ 30 minutes
 - **Data Source:** OpenWeatherMap API
 - **Zone Radius:** 2 km
 
 ## Trigger 2: Extreme Heat
+
 ...
 ```
 
@@ -1433,16 +1666,19 @@ def compute_fraud_score(rider_id, claim_id):
 # Fraud Detection Validation Report
 
 ## Anomaly Detection (Isolation Forest)
+
 - **Test Set Precision:** 0.82
 - **Test Set Recall:** 0.71
 - **Top Anomalies Detected:** GPS jumps, shift-time outliers
 
 ## Collusion Detection (Graph)
+
 - **Communities Found:** 47
 - **High-Risk Communities:** 3
 - **Manual Validation Rate:** 100% (all 3 validated as legitimate activity)
 
 ## Recommendations
+
 - Increase anomaly threshold to reduce false alarms.
 - Monitor top-5 communities monthly.
 ```
@@ -1475,12 +1711,14 @@ def compute_fraud_score(rider_id, claim_id):
 ### 7. Deliverables Checklist
 
 **By End of Phase 2 (April 4, 2026):**
+
 - [ ] Dynamic premium model trained, validated, documented.
 - [ ] Trigger evaluation engine fully integrated with event stream.
 - [ ] Mock triggers firing correctly in demo environment.
 - [ ] Basic fraud detection module (Isolation Forest) trained and tested.
 
 **By End of Phase 3 (April 17, 2026):**
+
 - [ ] All fraud detection modules (anomaly + collusion) production-ready.
 - [ ] APIs fully documented with example requests/responses.
 - [ ] Validation report with metrics and recommendations.
@@ -1515,5 +1753,6 @@ def compute_fraud_score(rider_id, claim_id):
    - Deployment guidelines and monitoring rules.
 
 ---
+
 **Built for the Guidewire DEVTrails 2026 – AI‑Powered Insurance for India’s Gig Economy**
 🚀 Let’s build a safety net for the invisible backbone of India’s on‑demand economy.
