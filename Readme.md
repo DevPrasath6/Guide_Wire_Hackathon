@@ -3,6 +3,23 @@
 
 ---
 
+## 📚 Quick Navigation
+
+- [Project Vision](#-project-vision)
+- [Target Persona](#-target-persona)
+- [Core Problem Statement](#-core-problem-statement)
+- [Golden Rules (Constraints)](#-the-golden-rules-constraints)
+- [Key Innovations & Novelty](#-key-innovations--novelty)
+- [Core Disruptions & Parametric Triggers](#-core-disruptions--parametric-triggers)
+- [Solution Architecture](#-solution-architecture)
+- [AI-ML Models & Components](#-ai-ml-models--components)
+- [Analytics Dashboard](#-analytics-dashboard)
+- [Tech Stack Summary](#-tech-stack-summary)
+- [6-Week Project Roadmap](#-6-week-project-roadmap-devtrails-2026)
+- [Requirement Mapping](#-how-this-meets-the-must-have-features)
+
+---
+
 ## 🚀 Project Vision
 
 India’s gig‑economy delivery partners (Zomato, Swiggy, Zepto, Blinkit, etc.) are the backbone of the on‑demand ecosystem, but they have no financial safety net when external disruptions hit. Extreme weather, pollution spikes, and sudden curfews can wipe out 20–30% of their monthly earnings in a matter of days.
@@ -56,6 +73,62 @@ Earnings Shield strictly complies with the hackathon’s non‑negotiables:
 3. **Weekly Pricing Model**
    - Premiums are structured on a **weekly basis**, aligned with gig‑worker payout cycles.
    - No hourly or long‑term insurance models.
+
+---
+
+## 🚀 Key Innovations & Novelty
+
+Earnings Shield goes beyond standard parametric insurance by introducing the following innovations:
+
+### 1. Hyper-Local Risk Modeling (2–3 km Zones)
+
+Unlike traditional insurance models that operate at city or regional levels, our system calculates risk at micro-zone (dark-store radius) level, enabling highly precise premium pricing and disruption detection.
+
+### 2. Income-Aware Parametric Triggers
+
+Instead of relying only on environmental triggers (like rain or heat), Earnings Shield combines:
+
+- External events (weather, AQI, curfew)
+- Platform-level signals (order volume drop)
+
+This ensures claims are triggered based on actual income loss, not just environmental conditions.
+
+### 3. Fully Autonomous (Zero-Touch) Insurance Engine
+
+Our system does not require manual claim filing. It:
+
+- Detects disruptions in real time
+- Verifies worker activity and income drop
+- Automatically initiates and approves claims
+
+This creates a self-operating insurance system.
+
+### 4. AI-Driven Personalized Weekly Micro-Pricing
+
+Premiums are dynamically calculated every week based on:
+
+- Zone risk
+- Worker schedule
+- Historical disruption patterns
+
+This enables personalized micro-insurance, instead of one-size-fits-all pricing.
+
+### 5. Graph-Based Fraud Ring Detection
+
+Beyond standard anomaly detection, the system uses graph-based models to:
+
+- Identify collusion between multiple riders
+- Detect coordinated fraudulent behavior at zone level
+
+This brings insurance-grade fraud intelligence into gig economy protection.
+
+### 6. Income Protection (Not Asset Protection)
+
+Unlike traditional insurance products that cover physical damage or health, Earnings Shield focuses purely on:
+
+- Protecting earning capacity (lost working hours)
+
+This represents a shift toward future-of-work insurance models.
 
 ---
 
