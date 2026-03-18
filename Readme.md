@@ -223,6 +223,189 @@ This directly satisfies the **“Analytics dashboard showing relevant metrics”
 
 ---
 
+## 📱 Worker App & User Experience (Demo Scope)
+
+To make the solution execution‑ready for hackathon demos, this section defines the **worker-facing app journey** in concrete UI terms.
+
+### 1) Worker Onboarding Flow (Login → Profile → Zone → Work Hours)
+
+The onboarding experience is designed to complete in **under 2 minutes** for first‑time users.
+
+#### Screen Sequence
+
+1. **Login / OTP Verification**
+   - Mobile number entry.
+   - OTP verify (mock allowed for demo).
+   - Consent checkbox for policy terms + data usage.
+
+2. **Profile Setup**
+   - Full name.
+   - Platform type (Zepto/Blinkit/Swiggy Instamart style).
+   - Platform worker ID (or mock ID).
+   - Preferred payout method (UPI ID / wallet).
+
+3. **Zone Selection**
+   - City → micro‑zone selection (dark store radius).
+   - “High risk / Medium risk / Low risk” visual tag from AI risk score.
+   - Suggested weekly premium preview for selected zone.
+
+4. **Work Hours Setup**
+   - Usual shift windows (e.g., 8AM–1PM, 6PM–11PM).
+   - Working days per week.
+   - Estimated hourly earning input (or fetched from mock platform API).
+
+5. **Onboarding Confirmation**
+   - Summary card: profile, zone, hours, estimated premium range.
+   - CTA: **“Activate Weekly Protection”**.
+
+#### Onboarding Output Data
+
+At completion, the app must store:
+- Worker identity + platform ID.
+- Zone and shift profile.
+- Baseline income assumptions.
+- Risk score inputs for premium generation.
+
+---
+
+### 2) Policy Screens (Weekly Premium, Active Coverage, Renewal Status)
+
+Policy UX should be simple enough for a rider to understand in a 10–15 second glance.
+
+#### A. Policy Purchase Screen
+
+Must show:
+- Suggested **weekly premium** (AI generated).
+- Coverage amount cap (weekly protected income limit).
+- Trigger types covered in current zone (rain, heat, AQI, curfew, platform-down).
+- Effective period (`start date → end date`).
+- CTA: **“Buy Weekly Plan”**.
+
+#### B. Active Policy Screen
+
+Must show:
+- Current policy status: `Active / Expiring Soon / Inactive`.
+- Days left in weekly cycle.
+- Total earnings protected this week.
+- Trigger monitor badge: `Live Monitoring Enabled`.
+
+#### C. Renewal Screen
+
+Must show:
+- Renewal due date.
+- New premium suggestion for next week (based on updated risk).
+- Change summary (`premium ↑/↓` + reason such as weather forecast risk).
+- CTA: **“Renew Now”**.
+
+---
+
+### 3) Claim Screens (Auto‑Claim Status, Payout Status, Claim History)
+
+Claims are designed as **zero‑touch first**, with full transparency to the worker.
+
+#### A. Auto‑Claim Status Screen
+
+When trigger event occurs, worker sees:
+- Event detected (e.g., heavy rain threshold crossed in Zone A).
+- Claim state timeline:
+  - `Trigger Detected`
+  - `Eligibility Check`
+  - `Claim Approved / Rejected`
+- Reason log (short text, rider friendly).
+
+#### B. Payout Status Screen
+
+Must show:
+- Estimated income loss formula result (`impacted hours × hourly baseline`).
+- Approved payout amount.
+- Transfer status: `Processing / Sent / Settled`.
+- Payout reference ID.
+
+#### C. Claim History Screen
+
+Must show a filterable list by:
+- Week.
+- Trigger type.
+- Status.
+
+Each claim record includes:
+- Date/time.
+- Trigger event type.
+- Claimed amount.
+- Paid amount.
+- Final status.
+
+---
+
+### 4) Mobile‑First UX Standards for Delivery Partners
+
+Since riders operate in high-motion, low-attention environments, UX must prioritize speed and readability.
+
+#### Usability Rules
+
+- **One‑hand friendly UI:** large tap targets, bottom‑anchored CTAs.
+- **Low text density:** key metrics in cards, not long paragraphs.
+- **High visibility states:** clear status chips (`Active`, `Claim Processing`, `Paid`).
+- **Fast load-first experience:** policy summary and claim status visible within first fold.
+- **Low network resilience:** graceful retry states for API fetch failures.
+- **Language-ready architecture:** labels structured to support future multilingual rollout.
+
+#### Accessibility & Clarity
+
+- Strong contrast for outdoor daylight readability.
+- Icons + text pairing for all critical states.
+- Avoid deep navigation; keep core journey within 3 primary tabs:
+  - `Home`
+  - `Policy`
+  - `Claims`
+
+---
+
+### 5) Demo Walkthrough Script (Worker Journey)
+
+Use this flow for a clean, judge-friendly narrative during the product demo.
+
+1. **Onboard Worker**
+   - Login with mobile + OTP.
+   - Complete profile, zone, and work hour setup.
+
+2. **Generate & Purchase Weekly Policy**
+   - Show AI-generated premium for selected zone.
+   - Tap “Buy Weekly Plan”.
+   - Display active coverage card.
+
+3. **Simulate Disruption Trigger**
+   - Inject mock heavy-rain event for that zone.
+   - Show auto-claim status progressing in timeline.
+
+4. **Show Instant Payout Progress**
+   - Claim approved.
+   - Payout status moves from `Processing` to `Settled`.
+
+5. **Show Claim History & Renewal Prompt**
+   - Demonstrate historical claim entry.
+   - Show weekly renewal recommendation.
+
+---
+
+### 6) Worker App Deliverables Checklist
+
+This is the implementation checklist mapped to your requested outputs.
+
+- ✅ **Onboarding UI complete**
+  - Login, profile setup, zone selection, work-hour setup, confirmation.
+
+- ✅ **Policy purchase and view screens**
+  - Weekly premium display, buy flow, active policy card, renewal status.
+
+- ✅ **Claim tracking screen**
+  - Auto-claim timeline, payout status, claim history list.
+
+- ✅ **Demo-ready worker flow**
+  - End-to-end walkthrough from onboarding to payout and renewal.
+
+---
+
 ## 🛠️ Tech Stack Summary
 
 ### Frontend
