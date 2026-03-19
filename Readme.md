@@ -18,7 +18,6 @@
 - [Tech Stack Summary](#-tech-stack-summary)
 - [6-Week Project Roadmap](#-6-week-project-roadmap-devtrails-2026)
 - [Requirement Mapping](#-how-this-meets-the-must-have-features)
-- [Release Procedure (Master then Main)](#-release-procedure-master-then-main)
 
 ---
 
@@ -950,41 +949,6 @@ All APIs are documented using:
 | **Instant payout processing**       | Mock payment gateway (Razorpay / Stripe / UPI) simulates instant wage recovery.                 |
 | **Fraud detection**                 | Isolation Forest + Graph ML for GPS spoofing, fake inactivity, collusion.                      |
 | **Analytics dashboard**             | Worker and insurer dashboards showing coverage, protected earnings, and risk metrics.          |
-
----
-
-## 🔁 Release Procedure (Master then Main)
-
-To follow the team workflow consistently, this repo supports a strict promotion path:
-
-1. Push release commit to `master`.
-2. Verify `master` points to the expected commit.
-3. Promote the same verified commit to `main`.
-
-### One-command helper
-
-Run from the repository root in PowerShell:
-
-```powershell
-.\scripts\push-master-then-main.ps1
-```
-
-Optional:
-
-```powershell
-.\scripts\push-master-then-main.ps1 -SourceBranch main
-.\scripts\push-master-then-main.ps1 -SkipMainPush
-```
-
-### What this script enforces
-
-- Clean working tree check before release.
-- Fast-forward pulls from remote.
-- Explicit verification that `origin/master` equals the release commit.
-- Fast-forward-only promotion to `main`.
-- If `main` is protected, auto-create a promotion branch and print the PR target.
-
-This removes manual branch mistakes and prevents publishing different commits to `master` and `main`.
 
 ---
 
