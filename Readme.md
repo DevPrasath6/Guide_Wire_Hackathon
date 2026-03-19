@@ -982,6 +982,7 @@ Optional:
 - Fast-forward pulls from remote.
 - Explicit verification that `origin/master` equals the release commit.
 - Fast-forward-only promotion to `main`.
+- If `main` is protected, auto-create a promotion branch and print the PR target.
 
 This removes manual branch mistakes and prevents publishing different commits to `master` and `main`.
 

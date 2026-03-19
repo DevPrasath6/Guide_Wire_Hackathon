@@ -1,6 +1,7 @@
 Param(
     [string]$SourceBranch = "main",
-    [switch]$SkipMainPush
+    [switch]$SkipMainPush,
+    [string]$PromotionBranchPrefix = "promote-master-to-main"
 )
 
 Set-StrictMode -Version Latest
@@ -36,7 +37,7 @@ Write-Host "Source branch: $SourceBranch" -ForegroundColor Yellow
 Write-Host "Release commit: $releaseSha" -ForegroundColor Yellow
 
 # Step 1: Push exact release commit to master.
-Invoke-Git "push origin $releaseSha:master"
+Invoke-Git "push origin ${releaseSha}:master"
 
 # Step 2: Verify master points to expected commit.
 $remoteMasterSha = (git ls-remote --heads origin master).Split([char]9)[0].Trim()
@@ -50,8 +51,24 @@ if (-not $SkipMainPush) {
     Invoke-Git "checkout main"
     Invoke-Git "pull --ff-only origin main"
     Invoke-Git "merge --ff-only $releaseSha"
-    Invoke-Git "push origin main"
-    Write-Host "Verified commit promoted to origin/main" -ForegroundColor Green
+
+    try {
+        Invoke-Git "push origin main"
+        Write-Host "Verified commit promoted to origin/main" -ForegroundColor Green
+    }
+    catch {
+        $message = $_.Exception.Message
+        if ($message -match "Protected branch update failed|through a pull request") {
+            $promotionBranch = "{0}-{1}" -f $PromotionBranchPrefix, (Get-Date -Format "yyyyMMdd-HHmmss")
+            Invoke-Git "checkout -B $promotionBranch $releaseSha"
+            Invoke-Git "push -u origin $promotionBranch"
+            Write-Host "main is protected. Open PR: base=main compare=$promotionBranch" -ForegroundColor Yellow
+            Invoke-Git "checkout main"
+        }
+        else {
+            throw
+        }
+    }
 } else {
     Write-Host "Skipped push to main (-SkipMainPush)." -ForegroundColor Yellow
 }
