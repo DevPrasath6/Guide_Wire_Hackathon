@@ -224,7 +224,14 @@ When the system detects a potential market-crash-like fraud wave:
 - Raise verification thresholds.
 - Slow high-risk batch disbursements.
 
-This acts as an insurance liquidity circuit breaker, buying verification time while keeping partial support active for genuine users.
+To avoid outage-like impact on legitimate riders, this circuit breaker operates under strict guardrails:
+- **Maximum reduction cap:** instant payouts can only be reduced down to a pre-agreed floor (e.g., 40–50%), never fully disabled for active, verified workers.
+- **Time-bounded activation:** each activation has a short, fixed TTL (e.g., 2–4 hours) and auto-reverts unless a human risk owner explicitly re-authorizes it.
+- **Explicit revert criteria:** when anomaly and fraud-wave metrics return to near-baseline for a sustained window (e.g., N hours), the system automatically restores normal payout and verification levels.
+- **Auditability:** all activations, parameter changes, and reverts are logged with timestamps, reason codes, and approver IDs, and are exposed in an internal risk-audit dashboard.
+- **Appeal & support path:** impacted riders can raise disputes via support; cases are linked to the relevant circuit-breaker event for prioritized manual review and post-mortem.
+
+This acts as an insurance liquidity circuit breaker, buying verification time within well-defined guardrails while keeping partial support active for genuine users.
 
 ### One-Liner for Pitch
 
