@@ -163,10 +163,10 @@ Spoof traces are usually too clean:
 
 #### 2) Environmental Fingerprinting
 
-We score context consistency using lightweight ambient signals:
+We score context consistency using lightweight, privacy-preserving ambient signals (derived on-device; no raw sensor streams are stored or transmitted):
 - Network jitter and handoff patterns.
 - Light variation and indoor/outdoor transitions.
-- Ambient acoustic signatures (traffic/rain intensity bands).
+- Privacy-preserving ambient acoustic features (e.g., on-device classification into coarse traffic/rain intensity bands; raw audio is never stored or sent off-device, and explicit user consent plus data-minimization/opt-out controls apply).
 
 Example:
 - A real heavy-rain window tends to show slower mobility plus network instability.
