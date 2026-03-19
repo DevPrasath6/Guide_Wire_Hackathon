@@ -57,17 +57,11 @@ if (-not $SkipMainPush) {
         Write-Host "Verified commit promoted to origin/main" -ForegroundColor Green
     }
     catch {
-        $message = $_.Exception.Message
-        if ($message -match "Protected branch update failed|through a pull request") {
-            $promotionBranch = "{0}-{1}" -f $PromotionBranchPrefix, (Get-Date -Format "yyyyMMdd-HHmmss")
-            Invoke-Git "checkout -B $promotionBranch $releaseSha"
-            Invoke-Git "push -u origin $promotionBranch"
-            Write-Host "main is protected. Open PR: base=main compare=$promotionBranch" -ForegroundColor Yellow
-            Invoke-Git "checkout main"
-        }
-        else {
-            throw
-        }
+        $promotionBranch = "{0}-{1}" -f $PromotionBranchPrefix, (Get-Date -Format "yyyyMMdd-HHmmss")
+        Invoke-Git "checkout -B $promotionBranch $releaseSha"
+        Invoke-Git "push -u origin $promotionBranch"
+        Write-Host "Direct push to main failed. Open PR: base=main compare=$promotionBranch" -ForegroundColor Yellow
+        Invoke-Git "checkout main"
     }
 } else {
     Write-Host "Skipped push to main (-SkipMainPush)." -ForegroundColor Yellow
