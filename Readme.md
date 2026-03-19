@@ -141,13 +141,13 @@ To address the Guidewire challenge around a **Market Crash Scenario**, Earnings 
 
 Instead of only asking whether GPS points match a place, we verify whether a rider can demonstrate **real-world work patterns** that are hard to fake at scale.
 
-This shifts fraud control from:
-- Passive validation
-
-to:
-- Active verification under stress conditions.
+This shifts fraud control:
+- **From:** Passive validation
+- **To:** Active verification under stress conditions.
 
 ### 🎯 Reality Anchors (Hard-to-Fake Signals)
+
+#### 1) Motion + Effort Signature
 
 #### 1) Motion + Effort Signature
 
