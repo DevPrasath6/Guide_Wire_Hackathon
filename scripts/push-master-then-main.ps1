@@ -9,7 +9,8 @@ $ErrorActionPreference = "Stop"
 function Invoke-Git {
     param([Parameter(Mandatory = $true)][string]$Command)
     Write-Host "> git $Command" -ForegroundColor Cyan
-    & git $Command
+    $commandScript = [ScriptBlock]::Create("git $Command")
+    & $commandScript
     if ($LASTEXITCODE -ne 0) {
         throw "Git command failed: git $Command"
     }
