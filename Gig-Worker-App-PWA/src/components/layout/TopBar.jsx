@@ -7,7 +7,7 @@ const TopBar = () => {
   return (
     <div style={{ height: '56px', position: 'sticky', top: 0, zIndex: 40, background: 'rgba(10,14,26,0.85)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '0 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <span>🛡️</span>
+        <img src="/logo.png" alt="ES" className="w-[20px] h-[20px] rounded mr-2" />
         <span style={{ fontFamily: 'Syne', color: '#00C896', fontSize: '15px', fontWeight: 700 }}>EARNINGS SHIELD</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>

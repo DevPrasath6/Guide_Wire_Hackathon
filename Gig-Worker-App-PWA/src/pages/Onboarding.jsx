@@ -6,20 +6,21 @@ import AnimatedBackground from '../components/layout/AnimatedBackground';
 
 const SLIDES = [
   {
-    emoji: "???",
+    icon: "/logo.png",
+    emoji: "🛡️",
     title: "Your Work, Protected",
     subtitle: "Income insurance built for Zomato, Swiggy, Zepto and other delivery partners. When disruptions stop your deliveries, we pay you.",
     color: "#00C896"
   },
   {
-    emoji: "??",
+    emoji: "🤖",
     title: "Zero-Touch Claims",
     subtitle: "Our AI detects rain, floods, curfews in your zone automatically. Your claim is filed and scored within seconds. No forms, no calls.",
     color: "#8B5CF6"
   },
   {
-    emoji: "?",
-    title: "?25/week. Real Protection.",
+    emoji: "⚡",
+    title: "₹25/week. Real Protection.",
     subtitle: "Plans from ?25 to ?70 per week. Get paid in minutes, not days. Cancel anytime. No hidden charges.",
     color: "#F59E0B"
   }
@@ -68,7 +69,11 @@ export default function Onboarding() {
                 style={{ backgroundColor: slide.color, filter: 'blur(40px)', transform: 'scale(1.5)' }}
               ></div>
               <div className="text-[80px] z-10 animate-bounce-slow">
-                {slide.emoji}
+                {slide.icon ? (
+                  <img src={slide.icon} alt="ES" className="w-[100px] h-[100px] rounded-[18px] shadow-2xl border border-white/10" />
+                ) : (
+                  slide.emoji
+                )}
               </div>
             </div>
 
