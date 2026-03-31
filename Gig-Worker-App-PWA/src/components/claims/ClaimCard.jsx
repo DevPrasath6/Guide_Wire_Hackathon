@@ -3,18 +3,18 @@ import { useNavigate } from 'react-router-dom'
 import GlassCard from '../ui/GlassCard'
 import StatusChip from '../ui/StatusChip'
 
-export default function ClaimCard({ claim }) {
+export default function ClaimCard({ claim, onClick }) {
   const navigate = useNavigate()
-  
+
   const colorMap = {
     approved: '#00C896', // teal
     pending: '#F59E0B',  // amber
     rejected: '#EF4444', // red
     flagged: '#8B5CF6'   // purple
   }
-  
+
   const borderColor = colorMap[claim.status?.toLowerCase()] || colorMap.pending
-  
+
   // Safe extraction of mock values for payouts (calculating default ratio if not supplied)
   const amount = parseFloat(claim.amount || claim.estimatedLoss || 0)
   const instantPayout = claim.instant ? claim.instant : Math.round(amount * 0.8)
@@ -22,7 +22,7 @@ export default function ClaimCard({ claim }) {
 
   return (
     <GlassCard
-      onClick={() => navigate(`/claims/${claim.id || ''}`)}
+      onClick={() => onClick ? onClick(claim) : navigate(`/claims/${claim.id || ''}`)}
       className="mb-2 p-[12px_14px] cursor-pointer hover:bg-white/5 transition-colors"
       style={{ borderLeft: `4px solid ${borderColor}` }}
     >
@@ -33,12 +33,12 @@ export default function ClaimCard({ claim }) {
         </div>
         <StatusChip status={claim.status} />
       </div>
-      
+
       <div className="flex justify-between items-center mt-1">
         <div className="font-mono text-[10px] text-es-muted">{claim.id}</div>
         <div className="font-body text-[11px] text-es-muted">{claim.date}</div>
       </div>
-      
+
       {(claim.status === 'approved' || claim.status === 'pending') && (
         <div className="mt-3 pt-3 border-t border-white/5 flex gap-3">
           <div className="text-[12px] text-es-teal font-medium tracking-wide">
