@@ -181,7 +181,7 @@ export default function Login() {
                   </button>
                 </p>
 
-                <div className={lex gap-2 justify-center mb-2 }>
+                <div className="flex gap-2 justify-center mb-2">
                   {otp.map((digit, i) => (
                     <input
                       key={i}
@@ -193,7 +193,9 @@ export default function Login() {
                       value={digit}
                       onChange={e => handleOtpChange(i, e.target.value)}
                       onKeyDown={e => handleOtpKeyDown(i, e)}
-                      className={glass-input !w-[44px] !h-[52px] !px-0 text-center text-[20px] font-mono transition-colors }
+                      className={`glass-input !w-[44px] !h-[52px] !px-0 text-center text-[20px] font-mono transition-colors ${
+                          error ? "border-es-red" : ""
+                        }`}
                     />
                   ))}
                 </div>
@@ -222,9 +224,9 @@ export default function Login() {
                 <button
                   disabled={countdown > 0 || isVerifying}
                   onClick={() => setCountdown(30)}
-                  className={mt-6 text-[13px] transition-colors }
+                  className="mt-6 text-[13px] transition-colors"
                 >
-                  {countdown > 0 ? Resend OTP in s : 'Resend OTP'}
+                  {countdown > 0 ? `Resend OTP in ${countdown}s` : 'Resend OTP'}
                 </button>
               </motion.div>
             )}

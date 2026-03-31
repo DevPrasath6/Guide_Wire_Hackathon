@@ -90,7 +90,7 @@ export default function Onboarding() {
             <motion.div
               key={i}
               layout
-              className={h-2 rounded-full }
+               className="h-2 rounded-full"
               style={{
                 width: i === currentSlide ? 24 : 8,
                 backgroundColor: i === currentSlide ? slide.color : undefined

@@ -9,12 +9,15 @@ import Claims from './pages/Claims';
 import Profile from './pages/Profile';
 
 const ProtectedRoute = ({ children }) => {
-  // For demo allow passage
+  const token = localStorage.getItem('es_token');
+  if (!token) return <Navigate to="/login" replace />;
   return children;
 };
 
 const RootRedirect = () => {
-  return <Navigate to="/home" />;
+  const token = localStorage.getItem('es_token');
+  if (!token) return <Navigate to="/onboarding" replace />;
+  return <Navigate to="/home" replace />;
 };
 
 function App() {
