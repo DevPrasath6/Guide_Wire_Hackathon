@@ -14,6 +14,11 @@ self.addEventListener("install", (e) => {
 });
 
 self.addEventListener("fetch", (e) => {
+  // Bypass API and Socket requests entirely
+  if (e.request.url.includes('/api/') || e.request.url.includes('/socket.io/')) {
+    return;
+  }
+  
   e.respondWith(
     caches.match(e.request).then((response) => response || fetch(e.request))
   );

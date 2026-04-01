@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate, useLocation, useParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import useClaimsStore from '../store/claimsStore'
-import TopBar from '../components/layout/TopBar'
-import BottomNav from '../components/layout/BottomNav'
+import { useClaimsStore } from '../store/claimsStore'
+import { esApi } from '../services/api'
+import { toast } from '../components/ui/Toast'
 import AutoClaimBanner from '../components/claims/AutoClaimBanner'
 import ClaimCard from '../components/claims/ClaimCard'
 import ClaimStepWizard from '../components/claims/ClaimStepWizard'
@@ -14,16 +15,81 @@ import StatusChip from '../components/ui/StatusChip'
 const TABS = ['Active', 'Past']
 
 export default function Claims() {
-  const { claims, pendingDisruption, isSubmitting, submitResult, submitClaim, clearSubmitResult } = useClaimsStore()
+  const { claims, pendingDisruption, loading, isSubmitting, submitResult, fetchClaims, setPendingDisruption, setSubmitting, setResult, clearResult } = useClaimsStore()
   
   const [activeTab, setActiveTab] = useState('Active')
   const [showWizard, setShowWizard] = useState(false)
   const [wizardIsAutoFill, setWizardIsAutoFill] = useState(false)
   const [selectedClaim, setSelectedClaim] = useState(null)
+  const location = useLocation()
+  const { claimId } = useParams()
+
+  useEffect(() => {
+    fetchClaims()
+  }, [fetchClaims])
+
+  useEffect(() => {
+    const syncClaims = () => fetchClaims({ silent: true })
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') syncClaims()
+    }
+
+    window.addEventListener('es:claims:changed', syncClaims)
+    window.addEventListener('visibilitychange', onVisibility)
+
+    const id = setInterval(() => {
+      if (document.visibilityState === 'visible') syncClaims()
+    }, 30000)
+
+    return () => {
+      clearInterval(id)
+      window.removeEventListener('es:claims:changed', syncClaims)
+      window.removeEventListener('visibilitychange', onVisibility)
+    }
+  }, [fetchClaims])
+
+  useEffect(() => {
+    if (location.state?.autoDisruption) {
+      setPendingDisruption(location.state.autoDisruption)
+      setWizardIsAutoFill(true)
+      setShowWizard(true)
+    }
+  }, [location.state, setPendingDisruption])
+
+  useEffect(() => {
+    let cancelled = false
+
+    const loadById = async () => {
+      if (!claimId) return
+
+      try {
+        const exact = await esApi.getClaimById(claimId)
+        if (!cancelled && exact) {
+          setSelectedClaim(exact)
+          return
+        }
+      } catch (err) {
+        console.warn('Failed to fetch claim by id, falling back to local list', err)
+      }
+
+      const matched = claims.find(
+        (c) => String(c.id || c.claimId || c._id) === String(claimId)
+      )
+
+      if (!cancelled && matched) {
+        setSelectedClaim(matched)
+      }
+    }
+
+    loadById()
+    return () => {
+      cancelled = true
+    }
+  }, [claimId, claims])
 
   // Filter claims based on tab
-  const activeClaims = claims.filter(c => c.status === 'processing' || c.status === 'pending')
-  const pastClaims = claims.filter(c => c.status === 'approved' || c.status === 'denied')
+  const activeClaims = claims.filter(c => c.status === 'pending')
+  const pastClaims = claims.filter(c => c.status === 'approved' || c.status === 'rejected')
   
   const displayedClaims = activeTab === 'Active' ? activeClaims : pastClaims
 
@@ -32,20 +98,72 @@ export default function Claims() {
     setShowWizard(true)
   }
 
+  const getCurrentLocation = () => new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error('Geolocation not supported on this device'))
+      return
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => resolve({
+        lat: position.coords.latitude,
+        lng: position.coords.longitude,
+        accuracy: position.coords.accuracy
+      }),
+      (error) => reject(error),
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+    )
+  })
+
+  const normalizeType = (type) => {
+    const map = {
+      rain: 'Heavy Rain',
+      heat: 'Extreme Heat',
+      platform: 'Platform Outage',
+      accident: 'Vehicle Issue'
+    }
+    return map[type] || type
+  }
+
   const handleWizardSubmit = async (formData) => {
     setShowWizard(false)
-    await submitClaim(formData, wizardIsAutoFill)
+    setSubmitting(true)
+
+    try {
+      const coords = await getCurrentLocation()
+      const submitted = await esApi.submitClaim({
+        type: normalizeType(formData.type),
+        hours: Number(formData.duration || formData.hours || 1),
+        lat: coords.lat,
+        lng: coords.lng,
+        note: formData.note || ''
+      })
+
+      setResult({
+        success: true,
+        status: submitted?.status,
+        confidence: Math.round(Number(submitted?.aiScore || 0.8) * 100),
+        instantAmount: submitted?.instantAmount || 0,
+        heldAmount: submitted?.heldAmount || 0,
+        amount: (submitted?.instantAmount || 0) + (submitted?.heldAmount || 0)
+      })
+      await fetchClaims()
+      toast.success('Claim submitted and synced')
+    } catch (err) {
+      console.error(err)
+      toast.error('Failed to submit claim. Please check location permission and retry.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const handleAIRevealComplete = () => {
-    clearSubmitResult()
+    clearResult()
+    fetchClaims()
   }
 
   return (
-    <div className="min-h-screen bg-es-bg pb-24 pt-safe font-sans">
-      <TopBar title="My Claims" />
-
-      <main className="px-5 pt-4">
+    <div className="min-h-[calc(100svh-140px)] bg-es-bg pb-4 pt-4 font-sans">
+      <main className="px-5">
         {/* Floating action button at top for regular manual claim */}
         <div className="flex justify-end mb-6">
           <button 
@@ -88,10 +206,14 @@ export default function Claims() {
         {/* Claims List */}
         <motion.div layout className="space-y-4">
           <AnimatePresence mode="popLayout">
-            {displayedClaims.length > 0 ? (
+            {loading ? (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12 text-es-muted text-sm">
+                Loading claims...
+              </motion.div>
+            ) : displayedClaims.length > 0 ? (
               displayedClaims.map((claim) => (
                 <ClaimCard 
-                  key={claim.id} 
+                  key={claim.id || claim.claimId} 
                   claim={claim} 
                   onClick={() => setSelectedClaim(claim)}
                 />
@@ -109,8 +231,6 @@ export default function Claims() {
           </AnimatePresence>
         </motion.div>
       </main>
-
-      <BottomNav />
 
       {/* Manual File Wizard Modal */}
       <AnimatePresence>
@@ -136,7 +256,10 @@ export default function Claims() {
       {/* Selected Claim Detail Bottom Sheet */}
       <BottomSheet 
         isOpen={!!selectedClaim} 
-        onClose={() => setSelectedClaim(null)}
+        onClose={() => {
+          setSelectedClaim(null)
+          if (claimId) navigate('/claims')
+        }}
         title="Claim Details"
       >
         {selectedClaim && (

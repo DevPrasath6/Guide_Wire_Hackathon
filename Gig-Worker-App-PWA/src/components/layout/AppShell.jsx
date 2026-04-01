@@ -4,6 +4,7 @@ import AnimatedBackground from './AnimatedBackground';
 import TopBar from './TopBar';
 import BottomNav from './BottomNav';
 import { useOfflineSync } from '../../hooks/useOfflineSync';
+import { useGlobalNotifications } from '../../hooks/useGlobalNotifications';
 
 const OfflineBanner = () => {
   const { isOnline, wasOffline } = useOfflineSync();
@@ -37,6 +38,8 @@ const OfflineBanner = () => {
 };
 
 const AppShell = ({ children }) => {
+  useGlobalNotifications();
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100svh' }}>
       <AnimatedBackground />

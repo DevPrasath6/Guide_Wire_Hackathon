@@ -7,6 +7,7 @@ import { useAuthStore } from '../store/authStore'
 import { usePolicyStore } from '../store/policyStore'
 import { useClaimsStore } from '../store/claimsStore'
 import { usePollTrigger } from '../hooks/usePollTrigger'
+import { esApi } from '../services/api'
 
 import GlassCard from '../components/ui/GlassCard'
 import GradientButton from '../components/ui/GradientButton'
@@ -17,13 +18,55 @@ export default function Home() {
   const navigate = useNavigate()
   const { worker } = useAuthStore()
   const { activePlan } = usePolicyStore()
-  const { claims } = useClaimsStore()
+  const { claims, fetchClaims } = useClaimsStore()
+  const [summary, setSummary] = useState(null)
   
   // Use mock zone if worker not fully initialized
   const safeZone = worker?.zone || 'Mumbai'
   const { disruption, dismiss } = usePollTrigger(safeZone)
 
   const firstName = worker?.name ? worker.name.split(' ')[0] : 'Partner'
+
+  useEffect(() => {
+    let mounted = true
+
+    const loadSummary = () => {
+      esApi.getDashboardSummary()
+        .then((data) => {
+          if (mounted) setSummary(data)
+        })
+        .catch(() => {
+          if (mounted) setSummary(null)
+        })
+    }
+
+    const syncNow = () => {
+      loadSummary()
+      fetchClaims({ silent: true })
+    }
+
+    syncNow()
+
+    const onClaimsChanged = () => syncNow()
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') syncNow()
+    }
+
+    window.addEventListener('es:claims:changed', onClaimsChanged)
+    window.addEventListener('visibilitychange', onVisibilityChange)
+
+    const id = setInterval(() => {
+      if (document.visibilityState === 'visible') syncNow()
+    }, 30000)
+
+    return () => {
+      mounted = false
+      clearInterval(id)
+      window.removeEventListener('es:claims:changed', onClaimsChanged)
+      window.removeEventListener('visibilitychange', onVisibilityChange)
+    }
+  }, [fetchClaims])
+
   const usedCoverage = 0
   const coveragePercent = Math.min((usedCoverage / (activePlan?.coverageAmount || 1000)) * 100, 100)
 
@@ -51,6 +94,7 @@ export default function Home() {
   }
 
   const getRecentClaims = () => {
+    if (summary?.recentClaims?.length) return summary.recentClaims.slice(0, 3)
     return claims.slice(0, 3)
   }
 
@@ -186,19 +230,19 @@ export default function Home() {
         <motion.div variants={itemVariants} className="grid grid-cols-3 gap-2">
           <MetricCard 
             label="Protected" 
-            value="₹4500" 
+            value={`₹${summary?.payoutTotal || 0}`} 
             icon="Shield" 
             color="teal" 
           />
           <MetricCard 
             label="Claims" 
-            value={claims.length} 
+            value={summary?.totalClaims ?? claims.length} 
             icon="FileText" 
             color="blue" 
           />
           <MetricCard 
             label="Premium" 
-            value={`₹${activePlan?.weeklyPremium || 45}`} 
+            value={`₹${worker?.policy?.weeklyPremium || activePlan?.weeklyPremium || 45}`} 
             icon="CreditCard" 
             color="amber" 
           />
@@ -244,12 +288,12 @@ export default function Home() {
               <span className="font-body text-[13px] text-white">View Policy</span>
             </GlassCard>
             
-            <GlassCard onClick={() => alert('Coming soon')} hoverable className="p-4 flex items-center gap-3">
+            <GlassCard onClick={() => navigate('/claims')} hoverable className="p-4 flex items-center gap-3">
               <CreditCard size={20} className="text-es-amber" />
               <span className="font-body text-[13px] text-white">History</span>
             </GlassCard>
             
-            <GlassCard onClick={() => alert('Support: 1800-XXX-XXXX')} hoverable className="p-4 flex items-center gap-3">
+            <GlassCard onClick={() => navigate('/support')} hoverable className="p-4 flex items-center gap-3">
               <HelpCircle size={20} className="text-es-blue" />
               <span className="font-body text-[13px] text-white">Support</span>
             </GlassCard>

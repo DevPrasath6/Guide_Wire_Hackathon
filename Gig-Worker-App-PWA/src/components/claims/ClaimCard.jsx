@@ -1,9 +1,9 @@
-import React from 'react'
+import React, { forwardRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import GlassCard from '../ui/GlassCard'
 import StatusChip from '../ui/StatusChip'
 
-export default function ClaimCard({ claim, onClick }) {
+const ClaimCard = forwardRef(function ClaimCard({ claim, onClick }, ref) {
   const navigate = useNavigate()
 
   const colorMap = {
@@ -15,13 +15,19 @@ export default function ClaimCard({ claim, onClick }) {
 
   const borderColor = colorMap[claim.status?.toLowerCase()] || colorMap.pending
 
-  // Safe extraction of mock values for payouts (calculating default ratio if not supplied)
-  const amount = parseFloat(claim.amount || claim.estimatedLoss || 0)
-  const instantPayout = claim.instant ? claim.instant : Math.round(amount * 0.8)
-  const heldPayout = claim.held ? claim.held : amount - instantPayout
+  // Prefer persisted backend payout fields; fallback only if absent.
+  const amount = Number(claim.amount || claim.estimatedLoss || 0)
+  const hasDbPayout = claim.instantAmount != null || claim.heldAmount != null
+  const instantPayout = hasDbPayout
+    ? Number(claim.instantAmount || 0)
+    : Number(claim.instant || Math.round(amount * 0.8))
+  const heldPayout = hasDbPayout
+    ? Number(claim.heldAmount || 0)
+    : Number(claim.held || (amount - instantPayout))
 
   return (
     <GlassCard
+      ref={ref}
       onClick={() => onClick ? onClick(claim) : navigate(`/claims/${claim.id || ''}`)}
       className="mb-2 p-[12px_14px] cursor-pointer hover:bg-white/5 transition-colors"
       style={{ borderLeft: `4px solid ${borderColor}` }}
@@ -51,4 +57,6 @@ export default function ClaimCard({ claim, onClick }) {
       )}
     </GlassCard>
   )
-}
+})
+
+export default ClaimCard

@@ -2,9 +2,11 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, Mail } from 'lucide-react';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { auth } from '../services/firebase';
 import GradientButton from '../components/ui/GradientButton';
 import AnimatedBackground from '../components/layout/AnimatedBackground';
-import { MOCK_WORKER } from '../constants/mock';
+import { useAuthStore } from '../store/authStore';
 
 export default function Login() {
   const [step, setStep] = useState(1);
@@ -14,10 +16,12 @@ export default function Login() {
   const [otp, setOtp] = useState(Array(6).fill(''));
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState(false);
+  const [firebaseError, setFirebaseError] = useState('');
   const [countdown, setCountdown] = useState(30);
   
   const navigate = useNavigate();
   const otpRefs = useRef([]);
+  const loginWithFirebaseUser = useAuthStore(state => state.loginWithFirebaseUser);
 
   // Countdown timer for OTP resend
   useEffect(() => {
@@ -79,49 +83,65 @@ export default function Login() {
     }
   };
 
-  const handleVerifyOTP = (code) => {
+  const handleVerifyOTP = async (code) => {
     const finalCode = code || otp.join('');
     
-    if (finalCode === '000000') {
-      setError(true);
-      return;
-    }
-
+    if (finalCode.length < 6) return;
     setIsVerifying(true);
+    setFirebaseError('');
     
-    // Simulate API delay
+    // We are currently doing a mock for phone because phone auth needs recapcha.
+    // If you want real phone auth, we can add RecaptchaVerifier! 
+    // Fallback to error for now to enforce Google login as requested
     setTimeout(() => {
-      localStorage.setItem('es_token', 'mock_jwt_' + Date.now());
-      localStorage.setItem('es_worker', JSON.stringify(MOCK_WORKER));
-      navigate('/home');
-    }, 1200);
+      setFirebaseError('Phone Login disabled. Please use Google Login.');
+      setIsVerifying(false);
+    }, 1000);
   };
 
   const handleSkipDemo = () => {
-    localStorage.setItem('es_token', 'demo_token');
-    localStorage.setItem('es_worker', JSON.stringify(MOCK_WORKER));
-    navigate('/home');
+    // Disabled skip demo
   };
 
-  const handleSocialAuth = (provider) => {
+  const handleSocialAuth = async (providerName) => {
     setIsVerifying(true);
-    // Simulate API delay for social auth (Google/Apple)
-    setTimeout(() => {
-      localStorage.setItem('es_token', `mock_${provider}_jwt_` + Date.now());
-      localStorage.setItem('es_worker', JSON.stringify(MOCK_WORKER));
-      navigate('/home');
-    }, 1200);
+    setFirebaseError('');
+    try {
+      if (providerName === 'google') {
+        const provider = new GoogleAuthProvider();
+        const result = await signInWithPopup(auth, provider);
+        await loginWithFirebaseUser(result.user);
+        navigate('/home');
+      } else {
+        // Mock fallback for apple since it needs apple developer setup
+        alert("Apple Sign-In is not configured yet. Please use Google.");
+        setIsVerifying(false);
+      }
+    } catch (err) {
+      const code = err?.code || '';
+      if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+        // User-initiated close/cancel is expected behavior; don't show as an error.
+        setFirebaseError('');
+      } else {
+        console.error(err);
+        setFirebaseError(err?.message || 'Failed to authenticate');
+      }
+      setIsVerifying(false);
+    }
   };
 
-  const handleEmailAuth = () => {
+  const handleEmailAuth = async () => {
     if (!email || password.length < 6) return;
     setIsVerifying(true);
-    // Simulate API delay for email auth
-    setTimeout(() => {
-      localStorage.setItem('es_token', 'mock_email_jwt_' + Date.now());
-      localStorage.setItem('es_worker', JSON.stringify(MOCK_WORKER));
+    setFirebaseError('');
+    try {
+      const { data } = await api.post('/auth/login', { email, password });
+      useAuthStore.getState().login(data.token, data);
       navigate('/home');
-    }, 1200);
+    } catch (err) {
+      setFirebaseError("Failed to login with email");
+      setIsVerifying(false);
+    }
   };
 
   return (

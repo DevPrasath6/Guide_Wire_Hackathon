@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, X, Clock } from 'lucide-react';
-import AppShell from '../components/layout/AppShell';
 import GlassCard from '../components/ui/GlassCard';
 import GradientButton from '../components/ui/GradientButton';
 import ConfidenceRing from '../components/ui/ConfidenceRing';
 import { usePolicyStore } from '../store/policyStore';
+import { useAuthStore } from '../store/authStore';
+import { toast } from '../components/ui/Toast';
 
 const ALL_TRIGGERS = [
   { name: 'Heavy Rain', emoji: '🌧', threshold: '> 15mm/hr' },
@@ -17,8 +18,33 @@ const ALL_TRIGGERS = [
 ];
 
 export default function Policy() {
-  const { activePlan, availablePlans, selectPlan } = usePolicyStore();
+  const { activePlan, availablePlans, upgradePlan, syncFromWorker } = usePolicyStore();
+  const worker = useAuthStore((state) => state.worker);
   const [upgradeModalPlan, setUpgradeModalPlan] = useState(null);
+
+  const segmentMultipliers = {
+    commodity: 1.15,
+    food: 1,
+    transportation: 0.9
+  };
+
+  const dynamicPrice = useMemo(() => {
+    const segment = worker?.profile?.segment || 'food';
+    const dailyEarnings = Number(worker?.profile?.dailyEarnings || 1000);
+    const workShift = worker?.profile?.workShift || 'day';
+    const workHours = Number(worker?.profile?.workHours || 8);
+    const capacity = Number(worker?.profile?.orderCapacity || 80);
+    const segmentFactor = segmentMultipliers[segment] || 1;
+    const earningFactor = dailyEarnings >= 3000 ? 1.35 : dailyEarnings >= 2000 ? 1.25 : dailyEarnings >= 1200 ? 1.1 : dailyEarnings < 600 ? 0.95 : 1;
+    const shiftFactor = workShift === 'night' ? 1.22 : workShift === 'mixed' ? 1.12 : 1;
+    const hoursFactor = workHours >= 12 ? 1.22 : workHours >= 10 ? 1.12 : workHours <= 5 ? 0.9 : 1;
+    const capacityFactor = capacity >= 180 ? 1.2 : capacity >= 120 ? 1.1 : capacity <= 60 ? 0.92 : 1;
+    return (base) => Math.max(20, Math.round((base * segmentFactor * earningFactor * shiftFactor * hoursFactor * capacityFactor) / 5) * 5);
+  }, [worker?.profile?.segment, worker?.profile?.dailyEarnings, worker?.profile?.workShift, worker?.profile?.workHours, worker?.profile?.orderCapacity]);
+
+  React.useEffect(() => {
+    syncFromWorker();
+  }, [syncFromWorker, worker?.policy?.planId]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -31,7 +57,7 @@ export default function Policy() {
   };
 
   return (
-    <AppShell>
+    <>
       <div className="flex-1 overflow-y-auto px-4 py-4 pb-20">
         <motion.div
           variants={containerVariants}
@@ -53,11 +79,11 @@ export default function Policy() {
                 <div className="flex justify-between items-start">
                   <div>
                     <h2 className="font-display text-base text-es-teal">{activePlan.name}</h2>
-                    <p className="text-sm text-es-text-muted mt-1">Up to ₹{activePlan.coverageAmount} per week</p>
+                    <p className="text-sm text-gray-400 mt-1">Up to ₹{activePlan.coverageAmount} per week</p>
                   </div>
                   <div className="text-right">
-                    <span className="font-display text-[22px] text-white font-bold">₹{activePlan.weeklyPremium}</span>
-                    <span className="text-xs text-es-text-muted">/wk</span>
+                    <span className="font-display text-[22px] text-white font-bold">₹{Number(worker?.policy?.weeklyPremium || dynamicPrice(activePlan.weeklyPremium))}</span>
+                    <span className="text-xs text-gray-400">/wk</span>
                   </div>
                 </div>
 
@@ -68,16 +94,16 @@ export default function Policy() {
                       <div key={t.name} className={`rounded-[10px] p-2 flex items-center justify-between ${isEnabled ? 'bg-es-teal/10 border border-es-teal/20' : 'bg-white/5 border border-white/5 opacity-50'}`}>
                         <div className="flex items-center gap-1.5">
                           <span className="text-[14px]">{t.emoji}</span>
-                          <span className={`font-body text-xs ${isEnabled ? 'text-es-teal' : 'text-es-text-muted line-through'}`}>{t.name}</span>
+                          <span className={`font-body text-xs ${isEnabled ? 'text-es-teal' : 'text-gray-400 line-through'}`}>{t.name}</span>
                         </div>
-                        {isEnabled && <span className="font-mono text-[10px] text-es-text-muted">{t.threshold}</span>}
+                        {isEnabled && <span className="font-mono text-[10px] text-gray-400">{t.threshold}</span>}
                       </div>
                     );
                   })}
                 </div>
 
                 <div className="flex justify-between items-center mt-4 border-t border-white/5 pt-3">
-                  <span className="text-xs text-es-text-muted">Valid Mon 28 Mar – Sun 3 Apr</span>
+                    <span className="text-xs text-gray-400">Valid Mon 28 Mar – Sun 3 Apr</span>
                   <button className="text-xs text-es-teal outline-none" onClick={() => window.scrollTo({top: 400, behavior: 'smooth'})}>Upgrade</button>
                 </div>
               </GlassCard>
@@ -96,6 +122,9 @@ export default function Policy() {
                 const isActive = activePlan?.id === plan.id;
                 const isRecommended = plan.id === 'standard';
                 const mockScore = plan.id === 'basic' ? 65 : plan.id === 'standard' ? 78 : 92;
+                const weeklyPremium = isActive
+                  ? Number(worker?.policy?.weeklyPremium || dynamicPrice(plan.weeklyPremium))
+                  : dynamicPrice(plan.weeklyPremium);
 
                 return (
                   <GlassCard key={plan.id} className={`p-5 relative overflow-hidden ${isActive ? 'border-l-4 border-l-es-teal' : ''}`}>
@@ -106,9 +135,9 @@ export default function Policy() {
                     </div>
 
                     <div className="mb-4">
-                      <span className="font-display text-[42px] text-es-teal font-extrabold">₹{plan.weeklyPremium}</span>
-                      <span className="font-body text-sm text-es-text-muted ml-1">/week</span>
-                      <span className="block text-[11px] text-es-text-muted italic mt-0.5">≈ ₹{plan.weeklyPremium * 4}/month</span>
+                      <span className="font-display text-[42px] text-es-teal font-extrabold">₹{weeklyPremium}</span>
+                      <span className="font-body text-sm text-gray-400 ml-1">/week</span>
+                      <span className="block text-[11px] text-gray-400 italic mt-0.5">≈ ₹{weeklyPremium * 4}/month</span>
                     </div>
 
                     <div className="h-px bg-white/5 my-4" />
@@ -119,7 +148,7 @@ export default function Policy() {
                       {ALL_TRIGGERS.map(t => {
                         const isEnabled = plan.triggers.includes(t.name);
                         return (
-                          <div key={t.name} className={`flex items-center gap-1.5 py-1 px-2 rounded-full overflow-hidden text-ellipsis whitespace-nowrap ${isEnabled ? 'bg-es-teal/10 text-es-teal' : 'bg-white/5 text-es-text-muted opacity-50'}`}>
+                          <div key={t.name} className={`flex items-center gap-1.5 py-1 px-2 rounded-full overflow-hidden text-ellipsis whitespace-nowrap ${isEnabled ? 'bg-es-teal/10 text-es-teal' : 'bg-white/5 text-gray-400 opacity-50'}`}>
                             {isEnabled ? <Check size={12} /> : <X size={12} />}
                             <span className={`text-[11px] font-body ${!isEnabled && 'line-through'}`}>{t.name}</span>
                           </div>
@@ -141,7 +170,7 @@ export default function Policy() {
 
                     <div className="flex items-center gap-3 bg-white/5 p-3 rounded-xl mb-5">
                         <ConfidenceRing score={mockScore} size={40} />
-                        <span className="text-xs text-es-text-muted">Your risk score for <br/>this zone:</span>
+                        <span className="text-xs text-gray-400">Your risk score for <br/>this zone:</span>
                     </div>
 
                     <GradientButton 
@@ -166,18 +195,27 @@ export default function Policy() {
              currentPlan={activePlan}
              onClose={() => setUpgradeModalPlan(null)}
              onConfirm={() => {
-                 selectPlan(upgradeModalPlan.id);
+                 upgradePlan(upgradeModalPlan.id, {
+                   segment: worker?.profile?.segment,
+                   dailyEarnings: worker?.profile?.dailyEarnings,
+                   platform: worker?.profile?.platform,
+                   workShift: worker?.profile?.workShift,
+                   workHours: worker?.profile?.workHours
+                 });
+                 toast.success('Your changes saved');
              }}
           />
         )}
       </AnimatePresence>
 
-    </AppShell>
+    </>
   );
 }
 
 function UpgradeModal({ plan, currentPlan, onClose, onConfirm }) {
-    const diff = plan.weeklyPremium - currentPlan.weeklyPremium;
+  const currentPremium = Number(currentPlan?.weeklyPremium || 0);
+  const nextPremium = Number(plan?.weeklyPremium || 0);
+  const diff = nextPremium - currentPremium;
     const diffText = diff > 0 ? `+₹${diff}/week more` : `-₹${Math.abs(diff)}/week less`;
     const diffColor = diff > 0 ? 'text-es-amber' : 'text-es-teal';
 
@@ -242,13 +280,13 @@ function UpgradeModal({ plan, currentPlan, onClose, onConfirm }) {
                         
                         <div className="flex items-center justify-between bg-white/5 p-4 rounded-xl border border-white/5 mb-2">
                             <div className="flex flex-col">
-                                <span className="text-[11px] text-es-text-muted mb-1">Your current plan</span>
-                                <span className="font-display text-[14px] text-white">{currentPlan.name} <span className="text-es-text-muted ml-1">₹{currentPlan.weeklyPremium}</span></span>
+                                <span className="text-[11px] text-gray-400 mb-1">Your current plan</span>
+                                <span className="font-display text-[14px] text-white">{currentPlan.name} <span className="text-gray-400 ml-1">₹{currentPremium}</span></span>
                             </div>
                             <div className="text-es-teal">→</div>
                             <div className="flex flex-col text-right">
-                                <span className="text-[11px] text-es-text-muted mb-1">New plan</span>
-                                <span className="font-display text-[14px] text-es-teal">{plan.name} <span className="text-es-teal opacity-70 ml-1">₹{plan.weeklyPremium}</span></span>
+                                <span className="text-[11px] text-gray-400 mb-1">New plan</span>
+                                <span className="font-display text-[14px] text-es-teal">{plan.name} <span className="text-es-teal opacity-70 ml-1">₹{nextPremium}</span></span>
                             </div>
                         </div>
                         
@@ -256,7 +294,7 @@ function UpgradeModal({ plan, currentPlan, onClose, onConfirm }) {
                             <span className={`font-mono text-[13px] ${diffColor}`}>{diffText}</span>
                         </div>
 
-                        <p className="text-[12px] text-es-text-muted italic text-center mb-6 mt-2">New coverage starts next Monday</p>
+                        <p className="text-[12px] text-gray-400 italic text-center mb-6 mt-2">New coverage starts next Monday</p>
 
                         <GradientButton 
                             label="Confirm & Pay"
@@ -264,7 +302,7 @@ function UpgradeModal({ plan, currentPlan, onClose, onConfirm }) {
                             onClick={handleConfirm}
                         />
                         <button 
-                            className="mt-4 text-[13px] text-es-text-muted text-center w-full focus:outline-none"
+                            className="mt-4 text-[13px] text-gray-400 text-center w-full focus:outline-none"
                             onClick={onClose}
                         >
                             Cancel

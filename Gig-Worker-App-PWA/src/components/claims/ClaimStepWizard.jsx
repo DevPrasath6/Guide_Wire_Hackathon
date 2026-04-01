@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import GradientButton from '../ui/GradientButton'
 import GlassCard from '../ui/GlassCard'
@@ -12,11 +12,40 @@ const CLAIM_TYPES = [
 
 export default function ClaimStepWizard({ onSubmit, initialType = '', onClose, isAutoFill }) {
   const [step, setStep] = useState(isAutoFill ? 2 : 1)
+  const [evidenceError, setEvidenceError] = useState('')
+  const fileInputRef = useRef(null)
+  const videoRef = useRef(null)
+  const canvasRef = useRef(null)
+  const [cameraOpen, setCameraOpen] = useState(false)
+  const [cameraLoading, setCameraLoading] = useState(false)
+  const [cameraStream, setCameraStream] = useState(null)
+  const [cameraPreviewUrl, setCameraPreviewUrl] = useState('')
   const [formData, setFormData] = useState({
     type: initialType || '',
     duration: 3,
     evidence: null
   })
+
+  const stopCameraStream = () => {
+    if (!cameraStream) return
+    cameraStream.getTracks().forEach((track) => track.stop())
+    setCameraStream(null)
+  }
+
+  useEffect(() => {
+    return () => {
+      stopCameraStream()
+      if (cameraPreviewUrl) {
+        URL.revokeObjectURL(cameraPreviewUrl)
+      }
+    }
+  }, [cameraPreviewUrl])
+
+  useEffect(() => {
+    if (cameraOpen && cameraStream && videoRef.current) {
+      videoRef.current.srcObject = cameraStream
+    }
+  }, [cameraOpen, cameraStream])
 
   const handleNext = () => setStep(s => s + 1)
   const handlePrev = () => setStep(s => s - 1)
@@ -29,8 +58,104 @@ export default function ClaimStepWizard({ onSubmit, initialType = '', onClose, i
     })
   }
 
+  const handleEvidenceSelect = (event) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    setEvidenceError('')
+    setFormData((prev) => ({ ...prev, evidence: file }))
+  }
+
+  const handleOpenGallery = () => {
+    setEvidenceError('')
+    fileInputRef.current?.click()
+  }
+
+  const handleCaptureFromCamera = async () => {
+    setEvidenceError('')
+    try {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error('Camera is not supported on this device/browser.')
+      }
+
+      setCameraLoading(true)
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' }
+      })
+
+      setCameraStream(stream)
+      setCameraPreviewUrl('')
+      setCameraOpen(true)
+    } catch (error) {
+      setEvidenceError(error?.message || 'Camera permission denied. Please allow access and try again.')
+    } finally {
+      setCameraLoading(false)
+    }
+  }
+
+  const handleTakePhoto = () => {
+    if (!videoRef.current || !canvasRef.current) return
+
+    const video = videoRef.current
+    const canvas = canvasRef.current
+    const width = video.videoWidth || 1280
+    const height = video.videoHeight || 720
+    canvas.width = width
+    canvas.height = height
+
+    const ctx = canvas.getContext('2d')
+    ctx.drawImage(video, 0, 0, width, height)
+
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        setEvidenceError('Could not capture photo. Please try again.')
+        return
+      }
+
+      if (cameraPreviewUrl) {
+        URL.revokeObjectURL(cameraPreviewUrl)
+      }
+
+      const file = new File([blob], `claim-evidence-${Date.now()}.jpg`, { type: 'image/jpeg' })
+      const preview = URL.createObjectURL(blob)
+      setCameraPreviewUrl(preview)
+      setFormData((prev) => ({ ...prev, evidence: file }))
+      setEvidenceError('')
+      stopCameraStream()
+    }, 'image/jpeg', 0.92)
+  }
+
+  const handleUsePhoto = () => {
+    setCameraOpen(false)
+  }
+
+  const handleRetake = async () => {
+    try {
+      setCameraLoading(true)
+      if (cameraPreviewUrl) {
+        URL.revokeObjectURL(cameraPreviewUrl)
+      }
+      setCameraPreviewUrl('')
+      setFormData((prev) => ({ ...prev, evidence: null }))
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' }
+      })
+      setCameraStream(stream)
+    } catch (error) {
+      setEvidenceError(error?.message || 'Could not restart camera.')
+    } finally {
+      setCameraLoading(false)
+    }
+  }
+
+  const handleCloseCamera = () => {
+    stopCameraStream()
+    setCameraOpen(false)
+  }
+
   return (
-    <div className="fixed inset-0 z-50 bg-es-bg/95 backdrop-blur-md flex flex-col p-4 sm:p-6">
+    <>
+      <div className="fixed inset-0 z-50 bg-es-bg/95 backdrop-blur-md flex flex-col p-4 sm:p-6">
       <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/5 pt-safe">
         <button 
           onClick={step === 1 && !isAutoFill ? onClose : handlePrev}
@@ -112,10 +237,41 @@ export default function ClaimStepWizard({ onSubmit, initialType = '', onClose, i
 
               <div>
                 <label className="block text-es-muted text-[13px] mb-4">Upload Proof (Screenshot / Photo)</label>
-                <div className="border-2 border-dashed border-white/10 rounded-xl p-8 text-center bg-white/5">
+                <div className="border-2 border-dashed border-white/10 rounded-xl p-6 text-center bg-white/5 space-y-3">
                   <span className="text-2xl mb-2 block">📸</span>
                   <div className="text-es-teal text-[14px] font-mono mb-1">Tap to upload</div>
                   <div className="text-es-muted text-[11px]">Optional if AI verifies the event</div>
+                  <div className="flex gap-2 justify-center pt-2">
+                    <button
+                      type="button"
+                      onClick={handleCaptureFromCamera}
+                      disabled={cameraLoading}
+                      className="px-3 py-2 rounded-lg bg-es-teal/20 border border-es-teal/40 text-es-teal text-[12px]"
+                    >
+                      {cameraLoading ? 'Opening...' : 'Use Camera'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleOpenGallery}
+                      className="px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white text-[12px]"
+                    >
+                      Choose File
+                    </button>
+                  </div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={handleEvidenceSelect}
+                    className="hidden"
+                  />
+                  {formData.evidence && (
+                    <div className="text-es-teal text-[11px]">Selected: {formData.evidence.name}</div>
+                  )}
+                  {evidenceError && (
+                    <div className="text-es-red text-[11px]">{evidenceError}</div>
+                  )}
                 </div>
               </div>
 
@@ -153,6 +309,11 @@ export default function ClaimStepWizard({ onSubmit, initialType = '', onClose, i
                   <span className="text-white font-medium">{formData.duration} hours</span>
                 </div>
 
+                <div className="flex justify-between border-b border-white/10 pb-4">
+                  <span className="text-es-muted text-sm">Evidence</span>
+                  <span className="text-white font-medium">{formData.evidence ? 'Attached' : 'Not attached'}</span>
+                </div>
+
                 <div className="flex justify-between pt-2">
                   <span className="text-es-teal text-sm">Estimated Payout</span>
                   <span className="text-es-teal font-display text-[20px]">
@@ -186,6 +347,58 @@ export default function ClaimStepWizard({ onSubmit, initialType = '', onClose, i
           )}
         </AnimatePresence>
       </div>
-    </div>
+      </div>
+
+      {cameraOpen && (
+        <div className="fixed inset-0 z-[60] bg-es-black/95 flex flex-col p-4">
+          <div className="flex items-center justify-between pb-3 border-b border-white/10">
+            <h3 className="text-white font-display text-lg">Capture Evidence</h3>
+            <button
+              type="button"
+              onClick={handleCloseCamera}
+              className="text-es-muted text-sm"
+            >
+              Close
+            </button>
+          </div>
+
+          <div className="flex-1 flex items-center justify-center py-4">
+            {!cameraPreviewUrl ? (
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                className="w-full max-h-[62svh] object-cover rounded-2xl border border-white/10"
+              />
+            ) : (
+              <img
+                src={cameraPreviewUrl}
+                alt="Captured evidence"
+                className="w-full max-h-[62svh] object-cover rounded-2xl border border-white/10"
+              />
+            )}
+            <canvas ref={canvasRef} className="hidden" />
+          </div>
+
+          <div className="space-y-2 pb-safe-bottom">
+            {!cameraPreviewUrl ? (
+              <GradientButton label="Capture Photo" fullWidth onClick={handleTakePhoto} />
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={handleRetake}
+                  className="h-[48px] rounded-full bg-white/10 border border-white/20 text-white"
+                >
+                  Retake
+                </button>
+                <GradientButton label="Use Photo" fullWidth onClick={handleUsePhoto} />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </>
   )
 }
