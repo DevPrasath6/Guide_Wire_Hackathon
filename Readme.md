@@ -11,7 +11,7 @@
 https://drive.google.com/file/d/1TYCSyfoO4eGa3ortgWDO384WEIxhy0xZ/view?usp=sharing
 
 ## Recorded Video
-- Add demo video link here (publicly accessible)
+- Demo video link here [(Public YT LINK)](https://youtu.be/x5Xm32vMirs)
 
 ## Repository Access
 - Repository: https://github.com/DevPrasath6/Guide_Wire_Hackathon
